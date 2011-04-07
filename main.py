@@ -22,6 +22,10 @@ __author__ = 'averrin'
 class Scene(QGraphicsScene):
     def __init__(self, parent = None):
         QGraphicsScene.__init__(self, parent)
+        self.init()
+
+    def init(self):
+        self.coord=self.drawText('boom', 0, 0)
 
 
     def dragEnterEvent(self, event):
@@ -59,6 +63,12 @@ class Scene(QGraphicsScene):
         self.removeItem(event.mimeData().Player)
 
 
+    def drawText(self, text, x, y):
+        item = QGraphicsTextItem(text)
+        self.addItem(item)
+        item.setY(x)
+        item.setX(y)
+        return item
 
 class UI(WinterQtApp):
     def __init__(self):
@@ -73,12 +83,6 @@ class UI(WinterQtApp):
 
 
 
-    def drawText(self, text, x, y):
-        item = QGraphicsTextItem(text)
-        self.scene.addItem(item)
-        item.setY(x)
-        item.setX(y)
-        return item
 
 
     def mousePressEvent(self, ev):
@@ -94,7 +98,7 @@ class UI(WinterQtApp):
         self.mouse = [ev.pos().x(), ev.pos().y()]
         try:
             item = self.scene.itemAt(self.mouse[0], self.mouse[1])
-            self.coord.setHtml('<span style="color:green;background:black;">%d,%d -- %s</span>' % (
+            self.scene.coord.setHtml('<span style="color:green;background:black;">%d,%d -- %s</span>' % (
             self.mouse[0], self.mouse[1], item))
 
         except Exception, e:

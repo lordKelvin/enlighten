@@ -54,7 +54,15 @@ class WinterQtApp(QMainWindow, WinterApp):
         screen = QDesktopWidget().screenGeometry()
         QMainWindow.setGeometry(self, 0, 0, screen.width(), screen.height())
 
-        self.coord = self.drawText('boom', 0, 0)
+        self.setWindowTitle(self.config.info['title'])
+        self.setWindowIcon(QIcon(icons['app']))
+        self.dockWidget.hide()
+        self.statusbar.showMessage('Done')
+        self.toolBar.setIconSize(QSize(int(self.config.options['tbicon_size']),int(self.config.options['tbicon_size'])))
+        self.toolBar.setMovable(False)
+
+        self.addToolButton('restart','core','regen_maze')
+
 
         self.core.main()
 
@@ -63,9 +71,12 @@ class WinterQtApp(QMainWindow, WinterApp):
         pass
 
 
-    def getMethod(self, str, key):
+    def getMethod(self, module, key):
         try:
-            return self.__dict__[key]
+            if module=='core':
+                return eval('self.core.%s' % key)
+            else:
+                return eval('self.%s' % key)
         except:
             return False
 
@@ -153,3 +164,9 @@ class WinterQtApp(QMainWindow, WinterApp):
 
 
 
+    def addToolButton(self,icon,plugin,method):
+        tb=QToolButton()
+        tb.setIcon(QIcon(icons[icon]))
+        self.toolBar.addWidget(tb)
+        self.connect(tb, SIGNAL("clicked()"), self.getMethod(plugin,method))
+        return tb
