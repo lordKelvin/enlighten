@@ -30,23 +30,19 @@ def simpleMaze(side=16,unit=20):
  #       player.append((unit * x + unit / 2, unit * y - unit / 2))
         
         d = []
-        if possible(x + 1, y): d.append(0)
-        if possible(x, y + 1): d.append(90)
-        if possible(x - 1, y): d.append(180)
-        if possible(x, y - 1): d.append(270)
+        if possible(x + 1, y): d.append([x + 1, y])
+        if possible(x, y + 1): d.append([x, y + 1])
+        if possible(x - 1, y): d.append([x - 1, y])
+        if possible(x, y - 1): d.append([x, y - 1])
         
         if not d:
             break
         
-        a = d[random.randint(0, len(d) - 1)]
-        if a == 0: x += 1
-        elif a == 90: y += 1
-        elif a == 180: x -= 1
-        elif a == 270: y -= 1
+        [x, y] = d[random.randint(0, len(d) - 1)]
         
     vec = []   
-    for y in xrange(16):
-        for x in xrange(16):
+    for y in xrange(side):
+        for x in xrange(side):
             if f[x][y] == 1:
                 vec.append(((unit * x, unit * y), (unit * x + unit, unit * y)))
                 vec.append(((unit * x, unit * y), (unit * x, unit * y - unit)))
