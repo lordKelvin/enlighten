@@ -3,54 +3,55 @@ from PyQt4.QtCore import *
 from painter import Painter
 import random
 import math
+from winterQt import API
 
 
 class Core(object):
     def afterInit(self):
-        self.painter=Painter(self.app.scene)
-        self.app.painter=self.painter
-        self.api=self.app.api
+        self.painter = Painter(self.app.scene)
+        self.app.painter = self.painter
+        self.api = API()
 
     def main(self):
-        self.drawMaze(self.gen_maze())
+        self.drawMaze(self.genMaze())
         self.drawLight()
         self.app.graphicsView.centerOn(QPointF(self.player.x(), self.player.y()))
 
-    def gen_maze(self):
-        maze = self.simpleMaze(side=self.app.config.options.side,unit=self.app.config.options.unit)
+    def genMaze(self):
+        maze = self.simpleMaze(side=self.app.config.options.side, unit=self.app.config.options.unit)
         [self.B, self.N] = self.fasterThenEver(maze)
         self.maze = maze
         return maze
 
     def drawMaze(self, maze):
-        self.map=self.painter.polygon(maze,width=2)
+        self.map = self.painter.polygon(maze, width=2)
 
         i = random.randint(0, len(maze) - 1)
         l = self.app.config.options.unit / (2 * math.hypot(self.B[i - 1][0], self.B[i - 1][1]))
         megax = (maze[i - 1][0] + maze[i][0]) / 2 - self.B[i - 1][1] * l
         megay = (maze[i - 1][1] + maze[i][1]) / 2 + self.B[i - 1][0] * l
-        self.player=self.painter.player(QPointF(megax, megay))
+        self.player = self.painter.player(QPointF(megax, megay))
         self.app.graphicsView.centerOn(QPointF(megax, megay))
 
-    def regen_maze(self):
+    def regenMaze(self):
         self.app.scene.clear()
         self.app.scene.init()
-        self.drawMaze(self.gen_maze())
+        self.drawMaze(self.genMaze())
         self.drawLight()
         self.api.info('Maze regenerated')
 
-    def drawLight(self,coord=''):
+    def drawLight(self, coord=''):
         if not coord:
-            coord=self.player
-        coord=(coord.x(),coord.y())
-            
-        self.light=self.painter.polygon(self.lightUp(coord,self.maze),'yellow',0,'yellow', 0.5)
+            coord = self.player
+        coord = (coord.x(), coord.y())
 
-    def redrawLight(self,pos):
+        self.light = self.painter.polygon(self.lightUp(coord, self.maze), 'yellow', 0, 'yellow', 0.5)
+
+    def redrawLight(self, pos):
         self.app.scene.removeItem(self.light)
         self.drawLight(pos)
 
-    def fasterThenEver(self,outline):
+    def fasterThenEver(self, outline):
         B = [] # B[ n ]: from outline[ n ] to outline[ n + 1 ]
         N = [] # N[ n ]: outline[i - 1] x outline[i]
         for i in xrange(len(outline)):
@@ -59,7 +60,7 @@ class Core(object):
             N.append(outline[i][0] * inext[1] - outline[i][1] * inext[0])
         return B, N
 
-    def lightUp(self,player,outline):
+    def lightUp(self, player, outline):
         visible = []
         u = player
         for i, c in enumerate(outline):
@@ -74,9 +75,9 @@ class Core(object):
                 X = (u[0] - n1[0], u[1] - n1[1])
                 div = C[0] * B[1] - C[1] * B[0]
                 if div:
-                    k = (B[0] * X[1] - B[1] * X[0]) / float( div )
+                    k = (B[0] * X[1] - B[1] * X[0]) / float(div)
                     if k > 0:
-                        m = (C[0] * X[1] - C[1] * X[0]) / float( div )
+                        m = (C[0] * X[1] - C[1] * X[0]) / float(div)
                         if m == 1:
                             one = self.B[j - 1][1] * u[0] - self.B[j - 1][0] * u[1] > self.N[j - 1]
                             two = self.B[j][1] * u[0] - self.B[j][0] * u[1] > self.N[j]
@@ -109,7 +110,7 @@ class Core(object):
         return visible
 
 
-    def simpleMaze(self,side=36,unit=20):
+    def simpleMaze(self, side=36, unit=20):
         f = []
         for i in xrange(side):
             f.append([])
@@ -122,7 +123,8 @@ class Core(object):
         def possible(x, y):
             if f[x][y]:
                 return False
-            s = [f[x + 1][y + 1], f[x][y + 1], f[x - 1][y + 1], f[x - 1][y], f[x - 1][y - 1], f[x][y - 1], f[x + 1][y - 1], f[x + 1][y]]
+            s = [f[x + 1][y + 1], f[x][y + 1], f[x - 1][y + 1], f[x - 1][y], f[x - 1][y - 1], f[x][y - 1],
+                 f[x + 1][y - 1], f[x + 1][y]]
             for i in (0, 2, 4, 6):
                 if s[i - 1] != 1 and s[i] == 1 and s[i + 1] != 1:
                     return False
@@ -218,5 +220,5 @@ class Core(object):
             t[0] += m[0]
             t[1] += m[1]
             outline.insert(i, tuple(t))
-            
+
         return outline

@@ -1,6 +1,6 @@
 import random
 
-def simpleMaze(side=16,unit=20):
+def simpleMaze(side=16, unit=20):
     f = []
     for i in xrange(side):
         f.append([])
@@ -9,12 +9,13 @@ def simpleMaze(side=16,unit=20):
 
     x = random.randint(1, side - 2)
     y = random.randint(1, side - 2)
-#    player = []
+    #    player = []
 
     def possible(x, y):
         if f[x][y] != 0:
             return False
-        s = [f[x + 1][y + 1], f[x][y + 1], f[x - 1][y + 1], f[x - 1][y], f[x - 1][y - 1], f[x][y - 1], f[x + 1][y - 1], f[x + 1][y]]
+        s = [f[x + 1][y + 1], f[x][y + 1], f[x - 1][y + 1], f[x - 1][y], f[x - 1][y - 1], f[x][y - 1], f[x + 1][y - 1],
+             f[x + 1][y]]
         for i in (0, 2, 4, 6):
             if s[i - 1] != 1 and s[i] == 1 and s[i + 1] != 1:
                 return False
@@ -27,20 +28,20 @@ def simpleMaze(side=16,unit=20):
 
     while True:
         f[x][y] = 1;
- #       player.append((unit * x + unit / 2, unit * y - unit / 2))
-        
+        #       player.append((unit * x + unit / 2, unit * y - unit / 2))
+
         d = []
         if possible(x + 1, y): d.append([x + 1, y])
         if possible(x, y + 1): d.append([x, y + 1])
         if possible(x - 1, y): d.append([x - 1, y])
         if possible(x, y - 1): d.append([x, y - 1])
-        
+
         if not d:
             break
-        
+
         [x, y] = d[random.randint(0, len(d) - 1)]
-        
-    vec = []   
+
+    vec = []
     for y in xrange(side):
         for x in xrange(side):
             if f[x][y] == 1:
@@ -48,7 +49,7 @@ def simpleMaze(side=16,unit=20):
                 vec.append(((unit * x, unit * y), (unit * x, unit * y - unit)))
                 vec.append(((unit * x, unit * y - unit), (unit * x + unit, unit * y - unit)))
                 vec.append(((unit * x + unit, unit * y), (unit * x + unit, unit * y - unit)))
-                
+
     vec = sorted(vec)
     i = 0
     while i + 1 < len(vec):
@@ -73,7 +74,7 @@ def simpleMaze(side=16,unit=20):
                     continue
             j += 1
         i += 1
-        
+
     outline = []
     v = [vec.pop(0)]
     while vec:
@@ -103,6 +104,7 @@ def simpleMaze(side=16,unit=20):
         outline.append(v[0][0])
 
     return outline
+
 '''
 import lightup, canvas, sys, os
 from PIL import Image, ImageSequence

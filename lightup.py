@@ -15,8 +15,8 @@ def lightUp(player, outline):
             X = (u[0] - n1[0], u[1] - n1[1])
             div = C[0] * B[1] - C[1] * B[0]
             if div:
-                k = (B[0] * X[1] - B[1] * X[0]) / float( div )
-                m = (C[0] * X[1] - C[1] * X[0]) / float( div )
+                k = (B[0] * X[1] - B[1] * X[0]) / float(div)
+                m = (C[0] * X[1] - C[1] * X[0]) / float(div)
                 if k > 0 and m == 1:
                     n3 = outline[(j + 1) % len(outline)]
                     one = (n1[0] - n2[0]) * u[1] - (n1[1] - n2[1]) * u[0] > n1[0] * n2[1] - n1[1] * n2[0]
@@ -28,7 +28,7 @@ def lightUp(player, outline):
                         else:
                             if kmin == 0 or kmin > k:
                                 kmin = k
-                        
+
                 if k > 0 and m > 0 and m < 1:
                     if k < 1:
                         fail = True

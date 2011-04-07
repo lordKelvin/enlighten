@@ -223,10 +223,24 @@ class WinterApp(object):
     __apiclass__ = WinterAPI
     __pmclass__ = WinterPM
 
+    def getMethod(self, module, key):
+        if not key.startswith('_'):
+            try:
+                if module == 'core':
+                    return eval('self.core.%s' % key)
+                else:
+                    return eval('self.%s' % key)
+            except Exception, e:
+                pass
+        return False
+
+    def __getitem__(self, key):
+        return self.getMethod('main', key)
+
     def loadConfigs(self):
         self.config = ''
         self.configFiles = ['config/main.cfg', 'config/plugins.cfg']
-        self.configs=[]
+        self.configs = []
         merger = ConfigMerger()
         for cf in self.configFiles:
             f = file(cf)
@@ -238,7 +252,7 @@ class WinterApp(object):
                 self.config = temp
 
     def saveConfig(self):
-        for i,cfg in enumerate(self.configs):
+        for i, cfg in enumerate(self.configs):
             f = file(self.configFiles[i], 'w')
             cfg.save(f)
 
@@ -263,10 +277,11 @@ class WinterApp(object):
         for m in dir(self):
             if m.startswith('p_'):
                 self.methods.append({'method': eval('self.core.%s' % m), 'sign': m.replace('p_', '')})
-            #        print self.methods
+                #        print self.methods
         self.api.__dict__.update(self.methods)
 
-    #        print dir(self.api)
+        #        print dir(self.api)
+
 #        print self.api.__dict__
 '''
 class WinterGUI(QMainWindow):

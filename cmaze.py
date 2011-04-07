@@ -19,7 +19,7 @@ def initrandom():
 def getrandom(x, y):
     global h
     i = random.randint(0, h - 1)
-    print x,y,':)'
+    print x, y, ':)'
     x[0] = r[0][i]
     y[0] = r[1][i]
     r[0][i] = r[0].pop(h)
@@ -51,13 +51,13 @@ def main():
     startx = [0]
     starty = [0]
     while getrandom(startx, starty):
-        if m[ starty[0] ][ startx[0] ] == 1:
+        if m[starty[0]][startx[0]] == 1:
             continue
         if random.randint(0, 99) > fullfill:
             continue
 
         [sx, sy] = {0: [1, 0], 1: [0, 1], 2: [-1, 0], 3: [0, -1]}[random.randint(0, 3)]
-        
+
         while not m[starty[0]][startx[0]]:
             m[starty[0]][startx[0]] = 1
             if random.randint(0, 99) > wallshort:
@@ -68,5 +68,5 @@ def main():
             startx[0] += sx
             starty[0] += sy
     view()
-    
+
 main()

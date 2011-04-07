@@ -8,19 +8,19 @@ from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 
 starttime = datetime.now()
-icons = loadIcons(cwd+'icons/')
+icons = loadIcons(cwd + 'icons/')
 
 from winterQt import WinterQtApp, API
 
 __author__ = 'averrin, lordKelvin' # >:(
 
 class Scene(QGraphicsScene):
-    def __init__(self, parent = None):
+    def __init__(self, parent=None):
         QGraphicsScene.__init__(self, parent)
         self.init()
 
     def init(self):
-        self.coord=self.drawText('', 0, 0)
+        self.coord = self.drawText('', 0, 0)
 
 
     def dragEnterEvent(self, event):
@@ -42,28 +42,25 @@ class Scene(QGraphicsScene):
 
 
     def dragMoveEvent(self, ev):
-        item = self.itemAt(ev.scenePos().x(),ev.scenePos().y())
-#        if item==self.app.core.light:
-#            self.removeItem(self.app.core.light)
-#        item = self.itemAt(ev.scenePos().x(),ev.scenePos().y())
-#        if item == self.app.core.map:
-        if item == self.app.core.map or item==self.app.core.light:
+        item = self.itemAt(ev.scenePos().x(), ev.scenePos().y())
+        #        if item==self.app.core.light:
+        #            self.removeItem(self.app.core.light)
+        #        item = self.itemAt(ev.scenePos().x(),ev.scenePos().y())
+        #        if item == self.app.core.map:
+        if item == self.app.core.map or item == self.app.core.light:
             self.app.core.redrawLight(ev.scenePos())
-#            self.app.core.player.setPos(ev.scenePos())
-
+        #            self.app.core.player.setPos(ev.scenePos())
 
 
     def dropEvent(self, event):
-
         pixmap = QPixmap(event.mimeData().imageData())
         item = Player(pixmap, None, self)
-
 
         item.setPos(event.scenePos() - event.mimeData().Pos)
         item.setZValue(event.mimeData().z)
 
         self.removeItem(event.mimeData().Player)
-        self.app.core.player=item
+        self.app.core.player = item
 
 
     def drawText(self, text, x, y):
@@ -77,50 +74,50 @@ class UI(WinterQtApp):
     def __init__(self):
         WinterQtApp.__init__(self)
 
-    def afterMWInit(self):
+    def _afterMWInit(self):
         self.scene = Scene()
         self.graphicsView.setScene(self.scene)
         self.graphicsView.mousePressEvent = self.mousePressEvent
         self.graphicsView.mouseReleaseEvent = self.mouseReleaseEvent
         self.graphicsView.mouseMoveEvent = self.mouseMoveEvent
 
-        self.scene.app=self
+        self.scene.app = self
 
 
     def keyPressEvent(self, event):
-#        print(event.key())
-        if event.key()==16777216:
+    #        print(event.key())
+        if event.key() == 16777216:
             QMainWindow.close(self)
-        elif event.key() in [87,16777235]:
+        elif event.key() in [87, 16777235]:
             self['n']()
-        elif event.key() in [83,16777237]:
+        elif event.key() in [83, 16777237]:
             self['s']()
-        elif event.key() in [65,16777234]:
+        elif event.key() in [65, 16777234]:
             self['w']()
-        elif event.key() in [68,16777236]:
+        elif event.key() in [68, 16777236]:
             self['e']()
 
 
     def n(self):
-        self.core.player.moveBy(0,-10)
+        self.core.player.moveBy(0, -10)
         self.refresh()
 
     def w(self):
-        self.core.player.moveBy(-10,0)
+        self.core.player.moveBy(-10, 0)
         self.refresh()
 
     def e(self):
-        self.core.player.moveBy(10,0)
+        self.core.player.moveBy(10, 0)
         self.refresh()
 
     def s(self):
-        self.core.player.moveBy(0,10)
+        self.core.player.moveBy(0, 10)
         self.refresh()
 
     def refresh(self):
-        item = self.scene.itemAt(self.core.player.x(),self.core.player.y())
-        if item == self.core.map or item==self.core.light:
-            self.core.redrawLight(QPointF(self.core.player.x()+5,self.core.player.y()+5))
+        item = self.scene.itemAt(self.core.player.x(), self.core.player.y())
+        if item == self.core.map or item == self.core.light:
+            self.core.redrawLight(QPointF(self.core.player.x() + 5, self.core.player.y() + 5))
 
 
     def mousePressEvent(self, ev):
@@ -141,10 +138,6 @@ class UI(WinterQtApp):
 
         except Exception, e:
             self.error(e)
-
-
-
-
 
 
 def main():
