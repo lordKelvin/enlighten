@@ -99,7 +99,7 @@ class Core(object):
             if not fail:
                 extra = ()
                 if rib0 != rib1:
-                    extra = (int(u[0] + C[0] * kmin + .5), int(u[1] + C[1] * kmin + .5))
+                    extra = (int(u[0] + C[0] * kmin + .5), int(u[1] + C[1] * kmin + .5)) #Local variable 'C' referenced before assignment
                     if rib0:
                         visible.append(extra)
 

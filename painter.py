@@ -13,7 +13,6 @@ class Painter(object):
 
     def line(self, x1, y1, x2, y2, color='black'):
         line = self.scene.addLine(QLineF(x1, y1, x2, y2), QPen(QColor(color)))
-        line.info = 'line -- %s' % (((x1, y1), (x2, y2)))
 
     def polygon(self, raw, fg_color='black', width=5, bg_color='white', alpha=1):
         points = []

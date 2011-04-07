@@ -12,7 +12,7 @@ def simpleMaze(side=16, unit=20):
     #    player = []
 
     def possible(x, y):
-        if f[x][y] != 0:
+        if f[x][y]:
             return False
         s = [f[x + 1][y + 1], f[x][y + 1], f[x - 1][y + 1], f[x - 1][y], f[x - 1][y - 1], f[x][y - 1], f[x + 1][y - 1],
              f[x + 1][y]]
@@ -27,7 +27,7 @@ def simpleMaze(side=16, unit=20):
         return S < 2
 
     while True:
-        f[x][y] = 1;
+        f[x][y] = 1
         #       player.append((unit * x + unit / 2, unit * y - unit / 2))
 
         d = []
