@@ -182,9 +182,11 @@ class WinterPM(object):
             try:
                 plugin.activate()
                 plugin.active = True
+                plugin.state = 'Activated'
             except Exception, e:
                 plugin.active = False
-                plugin.error = e
+                plugin.state = e
+                self.api.error(e)
 
 
     def __init__(self):
@@ -241,6 +243,8 @@ class WinterApp(object):
         self.config = ''
         self.configFiles = ['config/main.cfg', 'config/plugins.cfg']
         self.configs = []
+
+        #TODO: make some alternative for divided save
         merger = ConfigMerger()
         for cf in self.configFiles:
             f = file(cf)

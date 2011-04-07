@@ -51,6 +51,23 @@ class Core(object):
         self.app.scene.removeItem(self.light)
         self.drawLight(pos)
 
+
+    def n(self):
+        self.player.moveBy(0, -10)
+        self.app.refresh()
+
+    def w(self):
+        self.player.moveBy(-10, 0)
+        self.app.refresh()
+
+    def e(self):
+        self.player.moveBy(10, 0)
+        self.app.refresh()
+
+    def s(self):
+        self.player.moveBy(0, 10)
+        self.app.refresh()
+
     def fasterThenEver(self, outline):
         B = [] # B[ n ]: from outline[ n ] to outline[ n + 1 ]
         N = [] # N[ n ]: outline[i - 1] x outline[i]

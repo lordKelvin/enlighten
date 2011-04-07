@@ -34,7 +34,7 @@ class API(WinterAPI):
 
 
 class SettingsManager(QMainWindow):
-    #TODO: plugins settings, list of plugins, variants for settings
+    #TODO: plugins settings, list of plugins, variants for settings, array settings
     def __init__(self, app, *args, **kwargs):
     #        App.__init__(self,*args,**kwargs)
         QMainWindow.__init__(self)
@@ -59,7 +59,7 @@ class SettingsManager(QMainWindow):
         self.popts = {}
         self.opts.update(self.app.config.options)
         if self.app.config.options.plugins:
-            self.popts.update(self.app.config.plugins)
+            self.popts.update(self.app.config.plugins) #LIE!!!!
         self.fill(self.opts, self.tableWidget)
         if self.app.config.options.plugins:
             self.fill(self.popts, self.tableWidget_2)
@@ -153,7 +153,8 @@ class SettingsManager(QMainWindow):
         Description: %s\n \
         Author: %s\n \
         Version: %s\n \
-        ' % (pi.name, pi.config.info.description, pi.config.info.author, pi.config.info.version)
+        State: %s\n \
+        ' % (pi.name, pi.config.info.description, pi.config.info.author, pi.config.info.version, pi.state)
 
 
 class WinterQtApp(QMainWindow, WinterApp):

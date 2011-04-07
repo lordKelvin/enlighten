@@ -89,30 +89,14 @@ class UI(WinterQtApp):
         if event.key() == 16777216:
             QMainWindow.close(self)
         elif event.key() in [87, 16777235]:
-            self['n']()
+            self.core.n()
         elif event.key() in [83, 16777237]:
-            self['s']()
+            self.core.s()
         elif event.key() in [65, 16777234]:
-            self['w']()
+            self.core.w()
         elif event.key() in [68, 16777236]:
-            self['e']()
+            self.core.e()
 
-
-    def n(self):
-        self.core.player.moveBy(0, -10)
-        self.refresh()
-
-    def w(self):
-        self.core.player.moveBy(-10, 0)
-        self.refresh()
-
-    def e(self):
-        self.core.player.moveBy(10, 0)
-        self.refresh()
-
-    def s(self):
-        self.core.player.moveBy(0, 10)
-        self.refresh()
 
     def refresh(self):
         item = self.scene.itemAt(self.core.player.x(), self.core.player.y())
@@ -137,7 +121,7 @@ class UI(WinterQtApp):
             self.mouse[0], self.mouse[1], item))
 
         except Exception, e:
-            self.error(e)
+            self.api.error(e)
 
 
 def main():
