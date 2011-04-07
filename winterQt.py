@@ -191,6 +191,7 @@ class WinterQtApp(QMainWindow, WinterApp):
         self.smTB.setIcon(QIcon(icons['configure']))
         self.toolBar.addWidget(self.smTB)
         self.connect(self.smTB, SIGNAL("clicked()"), self.sm.show)
+        self.api.info('Application initialised')
         
     def toggleDebug(self):
         if self.dockWidget.isHidden():
@@ -209,7 +210,6 @@ class WinterQtApp(QMainWindow, WinterApp):
             else:
                 return eval('self.%s' % key)
         except Exception, e:
-            self.error(e)
             return False
 
     def __getitem__(self, key):

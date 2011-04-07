@@ -9,6 +9,7 @@ class Core(object):
     def afterInit(self):
         self.painter=Painter(self.app.scene)
         self.app.painter=self.painter
+        self.api=self.app.api
 
     def main(self):
         self.drawMaze(self.gen_maze())
@@ -21,20 +22,24 @@ class Core(object):
 
     def drawMaze(self, maze):
         self.map=self.painter.polygon(maze,width=2)
-        self.player=self.painter.player(QPointF(230, 168))
+
+        x=maze[0][0]-int(self.app.config.options.unit)
+        y=maze[0][1]
+        self.player=self.painter.player(QPointF(x,y))
 
     def regen_maze(self):
         self.app.scene.clear()
         self.app.scene.init()
         self.drawMaze(self.gen_maze())
         self.drawLight()
+        self.api.info('Maze regenerated')
 
     def drawLight(self,coord=''):
         if not coord:
             coord=self.player
         coord=(coord.x(),coord.y())
             
-        self.light=self.painter.polygon(self.lightUp(coord,self.maze),'yellow',1,'yellow', 0.5)
+        self.light=self.painter.polygon(self.lightUp(coord,self.maze),'yellow',0,'yellow', 0.5)
 
     def redrawLight(self,pos):
         self.app.scene.removeItem(self.light)
@@ -199,4 +204,5 @@ class Core(object):
         if v[0][0] == v[-1][1]:
             outline.append(v[0][0])
 
+        self.api.info('Maze generation done!')
         return outline

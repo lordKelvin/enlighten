@@ -1,14 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from datetime import datetime
-import os
-import re
-import sys
 from painter import Player
 from snowflake import *
 
 from PyQt4.QtGui import *
-from PyQt4 import uic
 from PyQt4.QtCore import *
 
 starttime = datetime.now()
@@ -16,7 +12,7 @@ icons = loadIcons(cwd+'icons/')
 
 from winterQt import WinterQtApp, API
 
-__author__ = 'averrin' # >:(
+__author__ = 'averrin, lordKelvin' # >:(
 
 class Scene(QGraphicsScene):
     def __init__(self, parent = None):
@@ -24,7 +20,7 @@ class Scene(QGraphicsScene):
         self.init()
 
     def init(self):
-        self.coord=self.drawText('boom', 0, 0)
+        self.coord=self.drawText('', 0, 0)
 
 
     def dragEnterEvent(self, event):
@@ -89,7 +85,40 @@ class UI(WinterQtApp):
         self.scene.app=self
 
 
+    def keyPressEvent(self, event):
+#        print(event.key())
+        if event.key()==16777216:
+            self.searchLine.clear()
+        elif event.key() in [87,16777235]:
+            self['n']()
+        elif event.key() in [83,16777237]:
+            self['s']()
+        elif event.key() in [65,16777234]:
+            self['w']()
+        elif event.key() in [68,16777236]:
+            self['e']()
 
+
+    def n(self):
+        self.core.player.moveBy(0,-10)
+        self.refresh()
+
+    def w(self):
+        self.core.player.moveBy(-10,0)
+        self.refresh()
+
+    def e(self):
+        self.core.player.moveBy(10,0)
+        self.refresh()
+
+    def s(self):
+        self.core.player.moveBy(0,10)
+        self.refresh()
+
+    def refresh(self):
+        item = self.scene.itemAt(self.core.player.x(),self.core.player.y())
+        if item == self.core.map or item==self.core.light:
+            self.core.redrawLight(QPointF(self.core.player.x()+5,self.core.player.y()+5))
 
 
     def mousePressEvent(self, ev):
