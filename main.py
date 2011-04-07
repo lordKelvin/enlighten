@@ -12,7 +12,6 @@ from PyQt4 import uic
 from PyQt4.QtCore import *
 
 starttime = datetime.now()
-cwd = sys.path[0] + '/'
 icons = loadIcons(cwd+'icons/')
 
 from winterQt import WinterQtApp, API
@@ -47,7 +46,13 @@ class Scene(QGraphicsScene):
 
 
     def dragMoveEvent(self, ev):
-        self.app.core.redrawLight(ev.scenePos())
+        item = self.itemAt(ev.scenePos().x(),ev.scenePos().y())
+#        if item==self.app.core.light:
+#            self.removeItem(self.app.core.light)
+#        item = self.itemAt(ev.scenePos().x(),ev.scenePos().y())
+#        if item == self.app.core.map:
+        if item == self.app.core.map or item==self.app.core.light:
+            self.app.core.redrawLight(ev.scenePos())
 
 
 

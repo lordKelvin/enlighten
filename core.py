@@ -23,7 +23,7 @@ class Core(object):
         return maze
 
     def drawMaze(self, maze):
-        self.painter.polygon(maze)
+        self.map=self.painter.polygon(maze,width=2)
         self.player=self.painter.player(QPointF(230, 168))
 
     def regen_maze(self):
@@ -37,7 +37,7 @@ class Core(object):
             coord=self.player
         coord=(coord.x(),coord.y())
             
-        self.light=self.painter.polygon(self.lightUp(coord,self.maze),'lightyellow',1,'lightyellow')
+        self.light=self.painter.polygon(self.lightUp(coord,self.maze),'yellow',1,'yellow', 0.5)
 
     def redrawLight(self,pos):
         self.app.scene.removeItem(self.light)
