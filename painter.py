@@ -39,6 +39,13 @@ class Player(QGraphicsPixmapItem):
         self.setCursor(Qt.OpenHandCursor) # вид курсора мыши над элементом
         #self.setAcceptDrops(True)
         self.setPos(coord)
+        self.ox=self.x
+        self.oy=self.y
+
+        def x(self):
+            return self.ox()+10
+        def y(self):
+            return self.oy()+10
 
     def mousePressEvent(self, event):
         if event.button() != Qt.LeftButton: # только левая клавиша мыши

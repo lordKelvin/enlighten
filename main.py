@@ -49,6 +49,7 @@ class Scene(QGraphicsScene):
 #        if item == self.app.core.map:
         if item == self.app.core.map or item==self.app.core.light:
             self.app.core.redrawLight(ev.scenePos())
+#            self.app.core.player.setPos(ev.scenePos())
 
 
 
@@ -62,6 +63,7 @@ class Scene(QGraphicsScene):
         item.setZValue(event.mimeData().z)
 
         self.removeItem(event.mimeData().Player)
+        self.app.core.player=item
 
 
     def drawText(self, text, x, y):
@@ -88,7 +90,7 @@ class UI(WinterQtApp):
     def keyPressEvent(self, event):
 #        print(event.key())
         if event.key()==16777216:
-            self.searchLine.clear()
+            QMainWindow.close(self)
         elif event.key() in [87,16777235]:
             self['n']()
         elif event.key() in [83,16777237]:
@@ -141,38 +143,7 @@ class UI(WinterQtApp):
             self.error(e)
 
 
-    def dragEnterEvent(self, event):
-        item = event.mimeData().Player
 
-        tempPixmap = QPixmap(item.pixmap())
-        painter = QPainter()
-        painter.begin(tempPixmap)
-        painter.fillRect(item.pixmap().rect(), QColor(127, 127, 127, 127))
-        painter.end()
-        item.setPixmap(tempPixmap)
-
-
-    def dragLeaveEvent(self, event):
-        item = event.mimeData().Player
-
-        pixmap = QPixmap(event.mimeData().imageData())
-        item.setPixmap(pixmap)
-
-
-    def dragMoveEvent(self, event):
-        pass
-
-
-    def dropEvent(self, event):
-
-        pixmap = QPixmap(event.mimeData().imageData())
-        item = Player(pixmap, None, self)
-
-
-        item.setPos(event.scenePos() - event.mimeData().Pos)
-        item.setZValue(event.mimeData().z)
-
-        self.removeItem(event.mimeData().Player)
 
 
 
