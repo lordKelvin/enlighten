@@ -24,10 +24,12 @@ class Painter(object):
         pen.setWidth(width)
         poly = self.scene.addPolygon(QPolygonF(points), pen, QBrush(QColor(bg_color)))
         poly.info = 'poly'
+        return poly
 
     def player(self, coord):
         player=Player(QPixmap(icons['green']),None,self.scene, coord=coord)
         self.scene.addItem(player)
+        return player
         
 class Player(QGraphicsPixmapItem):
     def __init__(self, pixmap, parent = None, scene = None, coord=QPointF(0,0)):

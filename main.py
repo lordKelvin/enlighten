@@ -47,7 +47,7 @@ class Scene(QGraphicsScene):
 
 
     def dragMoveEvent(self, ev):
-        pass
+        self.app.core.redrawLight(ev.scenePos())
 
 
 
@@ -80,6 +80,8 @@ class UI(WinterQtApp):
         self.graphicsView.mousePressEvent = self.mousePressEvent
         self.graphicsView.mouseReleaseEvent = self.mouseReleaseEvent
         self.graphicsView.mouseMoveEvent = self.mouseMoveEvent
+
+        self.scene.app=self
 
 
 
