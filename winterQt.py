@@ -34,6 +34,7 @@ class API(WinterAPI):
 
 
 class SettingsManager(QMainWindow):
+    #TODO: plugins settings, list of plugins, variants for settings
     def __init__(self, app, *args, **kwargs):
     #        App.__init__(self,*args,**kwargs)
         QMainWindow.__init__(self)
@@ -55,9 +56,10 @@ class SettingsManager(QMainWindow):
 
     def loadSettings(self):
         self.opts = {}
+        self.popts = {}
         self.opts.update(self.app.config.options)
         if self.app.config.options.plugins:
-            self.popts = self.app.project.config['Plugins'].copy()
+            self.popts.update(self.app.config.plugins)
         self.fill(self.opts, self.tableWidget)
         if self.app.config.options.plugins:
             self.fill(self.popts, self.tableWidget_2)
@@ -75,7 +77,7 @@ class SettingsManager(QMainWindow):
                 vitem.name = var
                 if array[var] in [True, False]:
                     vitem.setFlags(Qt.ItemFlags(Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled))
-                    check = Qt.Checked if array[var] == 'True' else Qt.Unchecked
+                    check = Qt.Checked if array[var] else Qt.Unchecked
                     vitem.setCheckState(check)
                 widget.setItem(row, 0, vitem)
                 if '%s_desc' % var in array:
@@ -88,12 +90,12 @@ class SettingsManager(QMainWindow):
                 row += 1
 
     def loadPlugins(self):
-        for plugin in self.app.pm.getAllPlugins():
+        for plugin in self.app.pm.plugins:
             item = QListWidgetItem(plugin.name)
             item.plugin = plugin
             item.setFlags(Qt.ItemIsUserCheckable | Qt.ItemIsEnabled)
 
-            check = Qt.Checked if plugin.plugin_object.is_activated else Qt.Unchecked
+            check = Qt.Checked if plugin.active else Qt.Unchecked
 
             item.setCheckState(check)
             self.listWidget.addItem(item)
@@ -151,9 +153,7 @@ class SettingsManager(QMainWindow):
         Description: %s\n \
         Author: %s\n \
         Version: %s\n \
-        Category: %s\n \
-        State: %s\n \
-        ' % (pi.name, pi.description, pi.author, pi.version, pi.category, pi.state)
+        ' % (pi.name, pi.config.info.description, pi.config.info.author, pi.config.info.version)
 
 
 class WinterQtApp(QMainWindow, WinterApp):
