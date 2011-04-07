@@ -16,7 +16,7 @@ icons = loadIcons(cwd+'icons/')
 
 from winterQt import WinterQtApp, API
 
-__author__ = 'averrin'
+__author__ = 'averrin' # >:(
 
 class Scene(QGraphicsScene):
     def __init__(self, parent = None):
