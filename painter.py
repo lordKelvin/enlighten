@@ -16,13 +16,15 @@ class Painter(object):
         line = self.scene.addLine(QLineF(x1, y1, x2, y2), QPen(QColor(color)))
         line.info = 'line -- %s' % (((x1, y1), (x2, y2)))
 
-    def polygon(self, raw, fg_color='black',width=5, bg_color='white'):
+    def polygon(self, raw, fg_color='black',width=5, bg_color='white', alpha=1):
         points = []
         for p in raw:
             points.append(QPointF(p[0], p[1]))
         pen=QPen(QColor(fg_color))
         pen.setWidth(width)
-        poly = self.scene.addPolygon(QPolygonF(points), pen, QBrush(QColor(bg_color)))
+        color=QColor(bg_color)
+        color.setAlphaF(alpha)
+        poly = self.scene.addPolygon(QPolygonF(points), pen, QBrush(color))
         poly.info = 'poly'
         return poly
 

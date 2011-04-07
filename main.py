@@ -47,7 +47,13 @@ class Scene(QGraphicsScene):
 
 
     def dragMoveEvent(self, ev):
-        self.app.core.redrawLight(ev.scenePos())
+        item = self.itemAt(ev.scenePos().x(),ev.scenePos().y())
+#        if item==self.app.core.light:
+#            self.removeItem(self.app.core.light)
+#        item = self.itemAt(ev.scenePos().x(),ev.scenePos().y())
+#        if item == self.app.core.map:
+        if item == self.app.core.map or item==self.app.core.light:
+            self.app.core.redrawLight(ev.scenePos())
 
 
 

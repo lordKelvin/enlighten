@@ -60,12 +60,19 @@ class WinterQtApp(QMainWindow, WinterApp):
         self.statusbar.showMessage('Done')
         self.toolBar.setIconSize(QSize(int(self.config.options['tbicon_size']),int(self.config.options['tbicon_size'])))
         self.toolBar.setMovable(False)
+        self.addToolButton('warning','main','toggleDebug')
 
         self.addToolButton('restart','core','regen_maze')
 
 
         self.core.main()
 
+
+    def toggleDebug(self):
+        if self.dockWidget.isHidden():
+            self.dockWidget.show()
+        else:
+            self.dockWidget.hide()
 
     def afterMWInit(self):
         pass
@@ -77,7 +84,8 @@ class WinterQtApp(QMainWindow, WinterApp):
                 return eval('self.core.%s' % key)
             else:
                 return eval('self.%s' % key)
-        except:
+        except Exception, e:
+            self.error(e)
             return False
 
     def __getitem__(self, key):
@@ -168,5 +176,7 @@ class WinterQtApp(QMainWindow, WinterApp):
         tb=QToolButton()
         tb.setIcon(QIcon(icons[icon]))
         self.toolBar.addWidget(tb)
-        self.connect(tb, SIGNAL("clicked()"), self.getMethod(plugin,method))
+        method=self.getMethod(plugin,method)
+        print method
+        self.connect(tb, SIGNAL("clicked()"), method)
         return tb
