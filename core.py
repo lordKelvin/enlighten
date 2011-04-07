@@ -9,13 +9,14 @@ class Core(object):
     def afterInit(self):
         self.painter=Painter(self.app.scene)
         self.app.painter=self.painter
+        self.api=self.app.api
 
     def main(self):
         self.drawMaze(self.gen_maze())
         self.drawLight()
 
     def gen_maze(self):
-        maze = self.simpleMaze(side=int(self.app.config.options.side),unit=int(self.app.config.options.unit))
+        maze = self.simpleMaze(side=self.app.config.options.side,unit=self.app.config.options.unit)
         [self.B, self.N] = self.fasterThenEver(maze)
         self.maze = maze
         return maze
@@ -24,7 +25,7 @@ class Core(object):
         self.map=self.painter.polygon(maze,width=2)
 
         i = random.randint(0, len(maze) - 1)
-        l = int( self.app.config.options.unit ) / (2 * math.hypot(self.B[i - 1][0], self.B[i - 1][1]))
+        l = self.app.config.options.unit / (2 * math.hypot(self.B[i - 1][0], self.B[i - 1][1]))
         megax = (maze[i - 1][0] + maze[i][0]) / 2 - self.B[i - 1][1] * l
         megay = (maze[i - 1][1] + maze[i][1]) / 2 + self.B[i - 1][0] * l
         self.player=self.painter.player(QPointF(megax, megay))

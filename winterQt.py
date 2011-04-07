@@ -122,6 +122,10 @@ class SettingsManager(QMainWindow):
             if value in ['True','False']:
                 self.opts[item.name]=eval(value)
             else:
+                try:
+                    value=int(value)
+                except:
+                    pass
                 self.opts[item.name]=value
         else:
             self.popts[item.name]=item.text()
@@ -301,6 +305,5 @@ class WinterQtApp(QMainWindow, WinterApp):
         tb.setIcon(QIcon(icons[icon]))
         self.toolBar.addWidget(tb)
         method=self.getMethod(plugin,method)
-        print method
         self.connect(tb, SIGNAL("clicked()"), method)
         return tb
