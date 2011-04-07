@@ -14,6 +14,7 @@ class Core(object):
     def main(self):
         self.drawMaze(self.gen_maze())
         self.drawLight()
+        self.app.graphicsView.centerOn(QPointF(self.player.x(), self.player.y()))
 
     def gen_maze(self):
         maze = self.simpleMaze(side=self.app.config.options.side,unit=self.app.config.options.unit)
@@ -29,6 +30,7 @@ class Core(object):
         megax = (maze[i - 1][0] + maze[i][0]) / 2 - self.B[i - 1][1] * l
         megay = (maze[i - 1][1] + maze[i][1]) / 2 + self.B[i - 1][0] * l
         self.player=self.painter.player(QPointF(megax, megay))
+        self.app.graphicsView.centerOn(QPointF(megax, megay))
 
     def regen_maze(self):
         self.app.scene.clear()
