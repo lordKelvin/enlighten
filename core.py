@@ -88,7 +88,7 @@ class Core(object):
             for j, n2 in enumerate(outline):
                 n1 = outline[j - 1]
                 C = (c[0] - u[0], c[1] - u[1])
-                B = (n2[0] - n1[0], n2[1] - n1[1])
+#                B = (n2[0] - n1[0], n2[1] - n1[1])
                 X = (u[0] - n1[0], u[1] - n1[1])
                 div = C[0] * B[1] - C[1] * B[0]
                 if div:
