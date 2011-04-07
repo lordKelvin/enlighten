@@ -15,7 +15,7 @@ class Core(object):
         self.drawLight()
 
     def gen_maze(self):
-        maze = self.simpleMaze()
+        maze = self.simpleMaze(side=int(self.app.config.options.side),unit=int(self.app.config.options.unit))
         self.maze=maze
         return maze
 

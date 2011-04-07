@@ -113,7 +113,7 @@ class SettingsManager(QMainWindow):
         python = sys.executable
         os.execl(python, python, * sys.argv)
 
-    def changeOption(self,item):
+    def changeOption(self,item): #!!!!!!!!!!!!!!!!! int save
         if item.checkState()==2 or (not item.checkState() and item.text() in ['False','True']):
             text = 'True' if item.checkState() else 'False'
             item.setText(text)
