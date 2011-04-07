@@ -76,9 +76,8 @@ class Core(object):
                     if k > 0:
                         m = (C[0] * X[1] - C[1] * X[0]) / float( div )
                         if m == 1:
-                            n3 = outline[(j + 1) % len(outline)]
-                            one = (n2[1] - n1[1]) * u[0] - (n2[0] - n1[0]) * u[1] > n1[0] * n2[1] - n1[1] * n2[0]
-                            two = (n3[1] - n2[1]) * u[0] - (n3[0] - n2[0]) * u[1] > n2[0] * n3[1] - n2[1] * n3[0]
+                            one = self.B[j - 1][1] * u[0] - self.B[j - 1][0] * u[1] > self.N[j - 1]
+                            two = self.B[j][1] * u[0] - self.B[j][0] * u[1] > self.N[j]
                             if one == two:
                                 if k < 1:
                                     fail = True
@@ -205,4 +204,17 @@ class Core(object):
         if v[0][0] == v[-1][1]:
             outline.append(v[0][0])
 
+        m = [0, 0]
+        for o in outline:
+            m[0] += o[0]
+            m[1] += o[1]
+        m[0] = side * unit / 2 - m[0] / len(outline)
+        m[1] = side * unit / 2 - m[1] / len(outline)
+
+        for i in xrange(len(outline)):
+            t = list(outline.pop(i))
+            t[0] += m[0]
+            t[1] += m[1]
+            outline.insert(i, tuple(t))
+            
         return outline
