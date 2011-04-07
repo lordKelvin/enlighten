@@ -13,7 +13,7 @@ starttime = datetime.now()
 
 icons = loadIcons(cwd+'icons/')
 
-from winterstone import WinterObject, WinterApp, WinterAPI, WinterGUI, WinterMainApp, WinterPM, WinterPlugin
+from winterstone import WinterObject, WinterApp, WinterAPI#, WinterGUI, WinterMainApp, WinterPM, WinterPlugin
 
 
 class API(WinterAPI):

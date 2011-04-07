@@ -5,8 +5,8 @@ import types
 import weakref
 from config import Config, ConfigMerger
 
-from PySide import QtGui, QtCore, QtUiTools
-from PySide.QtGui import QMainWindow, QPushButton, QApplication
+#from PySide import QtGui, QtCore, QtUiTools
+#from PySide.QtGui import QMainWindow, QPushButton, QApplication
 import imp
 
 class WinterManager(object):
@@ -268,7 +268,7 @@ class WinterApp(object):
 
     #        print dir(self.api)
 #        print self.api.__dict__
-
+'''
 class WinterGUI(QMainWindow):
     def __init__(self, uiPath):
     #        pass
@@ -288,3 +288,4 @@ class WinterMainApp(WinterGUI, WinterApp):
 class WinterSM(WinterGUI):
     def __init__(self):
         WinterGUI.__init__(self, 'main.ui')
+'''
