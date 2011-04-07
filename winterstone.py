@@ -226,14 +226,21 @@ class WinterApp(object):
     def loadConfigs(self):
         self.config = ''
         self.configFiles = ['config/main.cfg', 'config/plugins.cfg']
+        self.configs=[]
         merger = ConfigMerger()
         for cf in self.configFiles:
             f = file(cf)
             temp = Config(f)
+            self.configs.append(temp)
             if self.config:
                 merger.merge(self.config, temp)
             else:
                 self.config = temp
+
+    def saveConfig(self):
+        for i,cfg in enumerate(self.configs):
+            f = file(self.configFiles[i], 'w')
+            cfg.save(f)
 
     def __init__(self):
         self.api = self.__class__.__apiclass__()

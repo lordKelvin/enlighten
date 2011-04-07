@@ -11,7 +11,6 @@ from PyQt4.QtCore import *
 
 starttime = datetime.now()
 
-cwd = sys.path[0] + '/'
 icons = loadIcons(cwd+'icons/')
 
 from winterstone import WinterObject, WinterApp, WinterAPI, WinterGUI, WinterMainApp, WinterPM, WinterPlugin

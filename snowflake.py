@@ -1,4 +1,8 @@
 import os
+import sys
+
+
+cwd = sys.path[0] + '/'
 
 def loadIcons(icondir, ext='.png'):
     icons = {}

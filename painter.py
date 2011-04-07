@@ -3,9 +3,8 @@ import sys
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 from PyQt4.uic.Compiler.qtproxies import QtGui
-from snowflake import loadIcons
+from snowflake import *
 
-cwd = sys.path[0] + '/'
 icons = loadIcons(cwd+'icons/')
 
 class Painter(object):

@@ -12,7 +12,6 @@ from PyQt4 import uic
 from PyQt4.QtCore import *
 
 starttime = datetime.now()
-cwd = sys.path[0] + '/'
 icons = loadIcons(cwd+'icons/')
 
 from winterQt import WinterQtApp, API
