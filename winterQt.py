@@ -209,7 +209,6 @@ class WinterQtApp(QMainWindow, WinterApp):
         self._afterMWInit()
         WinterApp.__init__(self)
         self._afterAppInit()
-        self.api.ex = self.__getitem__
 
         self.connect(self.debugLine, SIGNAL("textChanged(QString)"), self._newchar)
         self.connect(self.debugLine, SIGNAL("returnPressed()"), self._command)
@@ -329,10 +328,10 @@ class WinterQtApp(QMainWindow, WinterApp):
         self.debugList.addItem(self.makeMessage(msg, 'lightyellow', 'warning', ts=True, fgcolor='black'))
 
 
-    def addToolButton(self, icon, plugin, method):
+    def addToolButton(self, icon, module, method):
         tb = QToolButton()
         tb.setIcon(QIcon(icons[icon]))
         self.toolBar.addWidget(tb)
-        method = self.getMethod(plugin, method)
+        method = self.getMethod(method, module)
         self.connect(tb, SIGNAL("clicked()"), method)
         return tb

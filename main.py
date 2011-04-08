@@ -25,15 +25,14 @@ class Scene(QGraphicsScene):
         self.coord = self.drawText('', 0, 0)
 
 
-    def dragEnterEvent(self, event):
-        item = event.mimeData().Player
-
-        tempPixmap = QPixmap(item.pixmap())
-        painter = QPainter()
-        painter.begin(tempPixmap)
-        painter.fillRect(item.pixmap().rect(), QColor(127, 127, 127, 127))
-        painter.end()
-        item.setPixmap(tempPixmap)
+#    def dragEnterEvent(self, event):
+#        item = event.mimeData().Player
+#        tempPixmap = QPixmap(item.pixmap())
+#        painter = QPainter()
+#        painter.begin(tempPixmap)
+#        painter.fillRect(item.pixmap().rect(), QColor(127, 127, 127, 127))
+#        painter.end()
+#        item.setPixmap(tempPixmap)
 
 
     def dragLeaveEvent(self, event):

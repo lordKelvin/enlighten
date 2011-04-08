@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+
 import sys
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
@@ -34,9 +34,8 @@ class Painter(object):
 class Player(QGraphicsPixmapItem):
     def __init__(self, pixmap, parent=None, scene=None, coord=QPointF(0, 0)):
         QGraphicsPixmapItem.__init__(self, pixmap, parent, scene)
-        self.setTransformationMode(Qt.SmoothTransformation) # качество прорисовки
-        self.setCursor(Qt.OpenHandCursor) # вид курсора мыши над элементом
-        #self.setAcceptDrops(True)
+        self.setTransformationMode(Qt.SmoothTransformation)
+        self.setCursor(Qt.OpenHandCursor)
         self.setPos(coord)
         self.ox = self.x
         self.oy = self.y
@@ -48,24 +47,18 @@ class Player(QGraphicsPixmapItem):
             return self.oy() + 10
 
     def mousePressEvent(self, event):
-        if event.button() != Qt.LeftButton: # только левая клавиша мыши
+        if event.button() != Qt.LeftButton:
             event.ignore()
             return
-        drag = QDrag(event.widget()) # объект Drag
+        drag = QDrag(event.widget())
         mime = QMimeData()
-        mime.setImageData(QVariant(self.pixmap())) # запоминаем рисунок
-        mime.Pos = event.pos() # запоминаем позицию события в координатах элемента
-        mime.z = self.zValue() # запоминаем z-позицию рисунка
-        mime.Player = self # запоминаем сам элемент, который переносится
-        # примечание: предыдущие три "запоминания" можно реализовать
-        # и с помощью более "понятного" mime.setData(),
-        # особенно, если нужно передавать данные не только в пределах одного приложения
-        # (тогда использование mime.setData() будет даже предпочтительнее)
+        mime.setImageData(QVariant(self.pixmap()))
+        mime.Pos = event.pos()
+        mime.z = self.zValue()
+        mime.Player = self
         drag.setMimeData(mime)
-
-        drag.setPixmap(self.pixmap()) # рисунок, отображающийся в процессе переноса
-        drag.setHotSpot(event.pos().toPoint()) # позиция "ухватки"
-
-        drag.start() # запуск (начало) перетаскивания#        circle.mousePressEvent=self.mousePressEvent
+        drag.setPixmap(self.pixmap())
+        drag.setHotSpot(event.pos().toPoint())
+        drag.start()
 
 

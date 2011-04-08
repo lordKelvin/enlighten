@@ -228,7 +228,7 @@ class WinterApp(object):
     __apiclass__ = WinterAPI
     __pmclass__ = WinterPM
 
-    def getMethod(self, module, key):
+    def getMethod(self, key, module='main'):
         if not key.startswith('_'):
             try:
                 if module == 'core':
@@ -277,19 +277,8 @@ class WinterApp(object):
             WinterPlugin()
             self.pm = self.__class__.__pmclass__()
             self.pm.activateAll()
-        self.refreshMethods()
+        self.api.ex = self.getMethod
 
-    def refreshMethods(self):
-        self.methods = []
-        for m in dir(self):
-            if m.startswith('p_'):
-                self.methods.append({'method': eval('self.core.%s' % m), 'sign': m.replace('p_', '')})
-                #        print self.methods
-        self.api.__dict__.update(self.methods)
-
-        #        print dir(self.api)
-
-#        print self.api.__dict__
 '''
 class WinterGUI(QMainWindow):
     def __init__(self, uiPath):

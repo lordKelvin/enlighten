@@ -18,10 +18,9 @@ class Core(object):
         self.app.graphicsView.centerOn(QPointF(self.player.x(), self.player.y()))
 
     def genMaze(self):
-        maze = self.simpleMaze(side=self.app.config.options.side, unit=self.app.config.options.unit)
-        [self.B, self.N] = self.fasterThenEver(maze)
-        self.maze = maze
-        return maze
+        self.maze = self.simpleMaze(side=self.app.config.options.side, unit=self.app.config.options.unit)
+        [self.B, self.N] = self.fasterThenEver(self.maze)
+        return self.maze
 
     def drawMaze(self, maze):
         self.map = self.painter.polygon(maze, width=2, bg_color=self.app.config.options.maze_bg_color)
