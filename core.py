@@ -51,22 +51,38 @@ class Core(object):
         self.app.scene.removeItem(self.light)
         self.drawLight(pos)
 
+    def canMove(self, dx, dy):
+        for i, b in enumerate(self.B):
+            div = dx * self.B[i][1] - dy * self.B[i][0]
+            if div:
+                px = self.player.ox() + 10 - self.maze[i][0]
+                py = self.player.oy() + 10 - self.maze[i][1]
+                k = (py * self.B[i][0] - px * self.B[i][1]) / float(div)
+                if k > 0 and k <= 1:
+                    n = (py * dx - px * dy) / float(div)
+                    if n >= 0 and n <= 1:
+                        return False
+        return True
 
     def n(self):
-        self.player.moveBy(0, -10)
-        self.app.refresh()
+        if self.canMove(0, -10):
+            self.player.moveBy(0, -10)
+            self.app.refresh()
 
     def w(self):
-        self.player.moveBy(-10, 0)
-        self.app.refresh()
+        if self.canMove(-10, 0):
+            self.player.moveBy(-10, 0)
+            self.app.refresh()
 
     def e(self):
-        self.player.moveBy(10, 0)
-        self.app.refresh()
+        if self.canMove(10, 0):
+            self.player.moveBy(10, 0)
+            self.app.refresh()
 
     def s(self):
-        self.player.moveBy(0, 10)
-        self.app.refresh()
+        if self.canMove(0, 10):
+            self.player.moveBy(0, 10)
+            self.app.refresh()
 
     def fasterThenEver(self, outline):
         B = [] # B[ n ]: from outline[ n ] to outline[ n + 1 ]
