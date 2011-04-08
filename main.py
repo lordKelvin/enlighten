@@ -17,9 +17,11 @@ __author__ = 'averrin, lordKelvin' # >:(
 class Scene(QGraphicsScene):
     def __init__(self, parent=None):
         QGraphicsScene.__init__(self, parent)
+        self.coord=''
         self.init()
 
     def init(self):
+        del self.coord
         self.coord = self.drawText('', 0, 0)
 
 

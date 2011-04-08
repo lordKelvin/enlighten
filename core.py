@@ -36,6 +36,9 @@ class Core(object):
     def regenMaze(self):
         self.app.scene.clear()
         self.app.scene.init()
+        del self.light
+        del self.player
+        del self.map
         self.drawMaze(self.genMaze())
         self.drawLight()
         self.api.info('Maze regenerated')
@@ -49,6 +52,7 @@ class Core(object):
 
     def redrawLight(self, pos):
         self.app.scene.removeItem(self.light)
+        del self.light
         self.drawLight(pos)
 
     def canMove(self, dx, dy):
