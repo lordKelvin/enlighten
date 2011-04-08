@@ -38,16 +38,7 @@ class myDelegate(QItemDelegate):
         QItemDelegate.__init__(self, parent)
         self.parent = parent
     def paint(self, painter, option, index):
-        if index.column() == 1:
-            Option = QStyleOptionButton()
-            Option.state = QStyle.State_Enabled
-            Option.direction = QApplication.layoutDirection()
-            Option.rect = option.rect
-            Option.fontMetrics = QApplication.fontMetrics()
-            Option.text = 'Button'
-            QApplication.style().drawControl(QStyle.CE_PushButton, Option, painter)
-        else:
-            QItemDelegate.paint(self, painter, option, index)
+        QItemDelegate.paint(self, painter, option, index)
     def createEditor(self, parent, option, index):
         value = index.model().data(index, Qt.EditRole).toString()
         item=self.parent.items[index.row()]
@@ -164,7 +155,7 @@ class SettingsManager(QMainWindow):
         python = sys.executable
         os.execl(python, python, *sys.argv)
 
-    def changeOption(self, item): #!!!!!!!!!!!!!!!!! int save
+    def changeOption(self, item):
         if item.checkState() == 2 or (not item.checkState() and item.text() in ['False', 'True']):
             text = 'True' if item.checkState() else 'False'
             item.setText(text)
