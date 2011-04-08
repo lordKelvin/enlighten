@@ -23,6 +23,9 @@ class WinterManager(object):
         '''
         return self.cls._get_all()
 
+    def count(self):
+        return len(self.all())
+
     def filter(self, **kwargs):
         '''
             Filter criteria pass like attr = value

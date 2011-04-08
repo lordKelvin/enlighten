@@ -24,7 +24,7 @@ class Core(object):
         return maze
 
     def drawMaze(self, maze):
-        self.map = self.painter.polygon(maze, width=2)
+        self.map = self.painter.polygon(maze, width=2, bg_color=self.app.config.options.maze_bg_color)
 
         i = random.randint(0, len(maze) - 1)
         l = self.app.config.options.unit / (2 * math.hypot(self.B[i - 1][0], self.B[i - 1][1]))

@@ -33,10 +33,44 @@ class API(WinterAPI):
         self.ex('error')(*args, **kwargs)
 
 
+class myDelegate(QItemDelegate):
+    def __init__(self, parent):
+        QItemDelegate.__init__(self, parent)
+        self.parent = parent
+    def paint(self, painter, option, index):
+        if index.column() == 1:
+            Option = QStyleOptionButton()
+            Option.state = QStyle.State_Enabled
+            Option.direction = QApplication.layoutDirection();
+            Option.rect = option.rect;
+            Option.fontMetrics = QApplication.fontMetrics();
+            Option.text = 'Button'
+            QApplication.style().drawControl(QStyle.CE_PushButton, Option, painter);
+        else:
+            QItemDelegate.paint(self, painter, option, index)
+    def createEditor(self, parent, option, index):
+        value = index.model().data(index, Qt.EditRole).toString()
+        try:
+            value=int(value)
+            editor = QSpinBox(parent)
+        except:
+            editor = QLineEdit(parent)
+        return editor
+    def setEditorData(self, editor, index):
+        value = index.model().data(index, Qt.EditRole).toString()
+        try:
+            editor.setText(value)
+        except:
+            editor.setValue(int(value))
+    def setModelData(self, editor, model, index):
+        value = editor.text()
+        model.setData(index, value, Qt.EditRole)
+    def updateEditorGeometry(self, editor, option, index):
+        editor.setGeometry(option.rect)
+
 class SettingsManager(QMainWindow):
     #TODO: plugins settings, list of plugins, variants for settings, array settings
     def __init__(self, app, *args, **kwargs):
-    #        App.__init__(self,*args,**kwargs)
         QMainWindow.__init__(self)
         uic.loadUi(cwd + "sm.ui", self)
         self.connect(self.restartButton, SIGNAL("clicked()"), self.restart)
@@ -68,6 +102,8 @@ class SettingsManager(QMainWindow):
         self.connect(self.tableWidget_2, SIGNAL("itemChanged(QTableWidgetItem *)"), self.changeOption)
 
     def fill(self, array, widget):
+        self.delegate = myDelegate(self)
+        widget.setItemDelegateForColumn(0,self.delegate)
         row = 0
         for var in array:
             if not var.endswith('_desc') and var != 'activated':
@@ -165,6 +201,7 @@ class WinterQtApp(QMainWindow, WinterApp):
         uic.loadUi(cwd + "main.ui", self)
         self._afterMWInit()
         WinterApp.__init__(self)
+        self._afterAppInit()
         self.api.ex = self.__getitem__
 
         self.connect(self.debugLine, SIGNAL("textChanged(QString)"), self._newchar)
@@ -202,6 +239,8 @@ class WinterQtApp(QMainWindow, WinterApp):
     def _afterMWInit(self):
         pass
 
+    def _afterAppInit(self):
+        pass
 
     def _newchar(self):
         ln = re.findall('[^ ]*', str(self.debugLine.text()))[0]
@@ -221,7 +260,7 @@ class WinterQtApp(QMainWindow, WinterApp):
             self.color = QColor(140, 0, 0)
             self.decor = 'none'
             self.dlock = True
-            #            self.color = QtGui.QColor(30, 144, 255)
+            #            self.color = QColor(30, 144, 255)
         self.debugLine.setStyleSheet(
                 "QWidget { font: bold; color: %s; text-decoration: %s;}" % (self.color.name(), self.decor))
 

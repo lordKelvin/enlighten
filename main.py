@@ -84,6 +84,10 @@ class UI(WinterQtApp):
         self.scene.app = self
 
 
+    def _afterAppInit(self):
+        self.scene.setBackgroundBrush(QBrush(QColor(self.config.options.scene_bg_color)))
+
+
     def keyPressEvent(self, event):
     #        print(event.key())
         if event.key() == 16777216:
