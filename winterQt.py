@@ -41,35 +41,47 @@ class myDelegate(QItemDelegate):
         if index.column() == 1:
             Option = QStyleOptionButton()
             Option.state = QStyle.State_Enabled
-            Option.direction = QApplication.layoutDirection();
-            Option.rect = option.rect;
-            Option.fontMetrics = QApplication.fontMetrics();
+            Option.direction = QApplication.layoutDirection()
+            Option.rect = option.rect
+            Option.fontMetrics = QApplication.fontMetrics()
             Option.text = 'Button'
-            QApplication.style().drawControl(QStyle.CE_PushButton, Option, painter);
+            QApplication.style().drawControl(QStyle.CE_PushButton, Option, painter)
         else:
             QItemDelegate.paint(self, painter, option, index)
     def createEditor(self, parent, option, index):
         value = index.model().data(index, Qt.EditRole).toString()
+        item=self.parent.items[index.row()]
         try:
             value=int(value)
             editor = QSpinBox(parent)
         except:
-            editor = QLineEdit(parent)
+            if hasattr(item,'variants'):
+                editor = QComboBox(parent)
+                editor.addItems(item.variants)
+            else:
+                editor = QLineEdit(parent)
         return editor
     def setEditorData(self, editor, index):
         value = index.model().data(index, Qt.EditRole).toString()
+        item=self.parent.items[index.row()]
         try:
             editor.setText(value)
         except:
-            editor.setValue(int(value))
+            try:
+                editor.setValue(int(value))
+            except:
+                editor.setCurrentIndex(list(item.variants).index(value))
     def setModelData(self, editor, model, index):
-        value = editor.text()
+        try:
+            value = editor.text()
+        except:
+            value = editor.currentText()
         model.setData(index, value, Qt.EditRole)
     def updateEditorGeometry(self, editor, option, index):
         editor.setGeometry(option.rect)
 
 class SettingsManager(QMainWindow):
-    #TODO: plugins settings, list of plugins, variants for settings, array settings
+    #TODO: plugins settings, list of plugins, array settings
     def __init__(self, app, *args, **kwargs):
         QMainWindow.__init__(self)
         uic.loadUi(cwd + "sm.ui", self)
@@ -105,12 +117,14 @@ class SettingsManager(QMainWindow):
         self.delegate = myDelegate(self)
         widget.setItemDelegateForColumn(0,self.delegate)
         row = 0
+        self.items=[]
         for var in array:
-            if not var.endswith('_desc') and var != 'activated':
+            if not var.endswith('_desc') and var != 'activated' and not var.endswith('_variants'):
                 widget.insertRow(row)
                 widget.setVerticalHeaderItem(row, QTableWidgetItem(var))
                 vitem = QTableWidgetItem(str(array[var]))
                 vitem.name = var
+                self.items.append(vitem)
                 if array[var] in [True, False]:
                     vitem.setFlags(Qt.ItemFlags(Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled))
                     check = Qt.Checked if array[var] else Qt.Unchecked
@@ -120,6 +134,8 @@ class SettingsManager(QMainWindow):
                     desc = array['%s_desc' % var]
                 else:
                     desc = ''
+                if '%s_variants' % var in array:
+                    vitem.variants=array['%s_variants' % var]
                 ditem = QTableWidgetItem(desc)
                 ditem.setFlags(Qt.ItemFlags(Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled))
                 widget.setItem(row, 1, ditem)
