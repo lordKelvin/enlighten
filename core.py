@@ -25,7 +25,7 @@ class Core(object):
     def drawMaze(self, maze):
         self.map = self.painter.polygon(maze, width=2, bg_color=self.app.config.options.maze_bg_color)
 
-        i = random.randint(0, len(maze) - 1)
+        i = random.randrange(len(maze))
         l = self.app.config.options.unit / (2 * math.hypot(self.B[i - 1][0], self.B[i - 1][1]))
         megax = (maze[i - 1][0] + maze[i][0]) / 2 - self.B[i - 1][1] * l
         megay = (maze[i - 1][1] + maze[i][1]) / 2 + self.B[i - 1][0] * l
@@ -89,7 +89,7 @@ class Core(object):
 
     def fasterThenEver(self, outline):
         B = [] # B[ n ]: from outline[ n ] to outline[ n + 1 ]
-        N = [] # N[ n ]: outline[i - 1] x outline[i]
+        N = [] # N[ n ]: outline[n] x outline[n + 1]
         for i in xrange(len(outline)):
             inext = outline[(i + 1) % len(outline)]
             B.append((inext[0] - outline[i][0], inext[1] - outline[i][1]))
@@ -100,14 +100,12 @@ class Core(object):
         visible = []
         u = player
         for i, c in enumerate(outline):
-            rib0 = self.B[i - 1][1] * u[0] - self.B[i - 1][0] * u[1] > self.N[i - 1]
-            rib1 = self.B[i][1] * u[0] - self.B[i][0] * u[1] > self.N[i]
+            rib0 = u[0] * self.B[i - 1][1] - u[1] * self.B[i - 1][0] > self.N[i - 1]
+            rib1 = u[0] * self.B[i][1] - u[1] * self.B[i][0] < self.N[i]
             fail = False
             kmin = 0
-#            for j, n2 in enumerate(outline):
+            C = (c[0] - u[0], c[1] - u[1])
             for j in xrange(len(outline)):
-#                n1 = outline[j - 1]
-                C = (c[0] - u[0], c[1] - u[1])
                 X = (u[0] - outline[j - 1][0], u[1] - outline[j - 1][1])
                 div = C[0] * self.B[j - 1][1] - C[1] * self.B[j - 1][0]
                 if div:
@@ -134,14 +132,14 @@ class Core(object):
                                     kmin = k
             if not fail:
                 extra = ()
-                if rib0 != rib1:
+                if rib0 == rib1:
                     extra = (int(u[0] + C[0] * kmin + .5), int(u[1] + C[1] * kmin + .5)) #Local variable 'C' referenced before assignment
                     if rib0:
                         visible.append(extra)
 
                 visible.append(c)
 
-                if not rib0 and rib1:
+                if rib0 == False and rib1 == False:
                     visible.append(extra)
         return visible
 
@@ -153,8 +151,8 @@ class Core(object):
             for j in xrange(side):
                 f[i].append(0 if i % (side - 1) and j % (side - 1) else 2)
 
-        x = random.randint(1, side - 2)
-        y = random.randint(1, side - 2)
+        x = random.randrange(1, side - 1)
+        y = random.randrange(1, side - 1)
 
         def possible(x, y):
             if f[x][y]:
@@ -180,7 +178,7 @@ class Core(object):
 
             if not d:
                 break
-            [x, y] = d[random.randint(0, len(d) - 1)]
+            [x, y] = d[random.randrange(len(d))]
 
         vec = []
         for y in xrange(side):

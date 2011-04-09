@@ -7,8 +7,8 @@ def simpleMaze(side=16, unit=20):
         for j in xrange(side):
             f[i].append(0 if i % (side - 1) and j % (side - 1) else 2)
 
-    x = random.randint(1, side - 2)
-    y = random.randint(1, side - 2)
+    x = random.randrange(1, side - 1)
+    y = random.randrange(1, side - 1)
     #    player = []
 
     def possible(x, y):
@@ -39,7 +39,7 @@ def simpleMaze(side=16, unit=20):
         if not d:
             break
 
-        [x, y] = d[random.randint(0, len(d) - 1)]
+        [x, y] = d[random.randrange(len(d))]
 
     vec = []
     for y in xrange(side):
