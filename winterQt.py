@@ -1,17 +1,16 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
-import os
-import re
-import sys
 from snowflake import *
 
 from config import Config
 from PyQt4.QtGui import *
 from PyQt4 import uic
 from PyQt4.QtCore import *
+from winterstone import WinterApp, WinterAPI
+from winterBug import *
 
 starttime = datetime.now()
-from winterstone import WinterObject, WinterApp, WinterAPI#, WinterGUI, WinterMainApp, WinterPM, WinterPlugin
+
 
 
 class API(WinterAPI):
@@ -43,7 +42,7 @@ class myDelegate(QItemDelegate):
         try:
             value=int(value)
             editor = QSpinBox(parent)
-        except:
+        except ValueError:
             if hasattr(item,'variants'):
                 editor = QComboBox(parent)
                 editor.addItems(item.variants)
@@ -55,15 +54,15 @@ class myDelegate(QItemDelegate):
         item=self.parent.items[index.row()]
         try:
             editor.setText(value)
-        except:
+        except AttributeError:
             try:
                 editor.setValue(int(value))
-            except:
+            except AttributeError:
                 editor.setCurrentIndex(list(item.variants).index(value))
     def setModelData(self, editor, model, index):
         try:
             value = editor.text()
-        except:
+        except AttributeError:
             value = editor.currentText()
         model.setData(index, value, Qt.EditRole)
     def updateEditorGeometry(self, editor, option, index):
@@ -164,7 +163,7 @@ class SettingsManager(QMainWindow):
             else:
                 try:
                     value = int(value)
-                except:
+                except ValueError:
                     pass
                 self.opts[item.name] = value
         else:
@@ -197,134 +196,17 @@ class SettingsManager(QMainWindow):
         State: %s\n \
         ' % (pi.name, pi.config.info.description, pi.config.info.author, pi.config.info.version, pi.state)
 
-
-class WinterQtDebug(QDockWidget):
-
-    class WinterLine(QLineEdit):
-        def __init__(self, parent):
-            QLineEdit.__init__(self)
-            self.app=parent.app
-            self.parent=parent
-            self.connect(self, SIGNAL("textChanged(QString)"), self._newchar)
-            self.connect(self, SIGNAL("returnPressed()"), self._command)
-
-        def _newchar(self):
-            ln = re.findall('[^ ]*', str(self.text()))[0]
-            if self.app.getMethod(ln):
-                self.color = QColor(0, 150, 0)
-                self.decor = 'underline'
-                self.dlock = False
-            else:
-                self.color = QColor(140, 0, 0)
-                self.decor = 'none'
-                self.dlock = True
-            self.setStyleSheet(
-                    "QWidget { font: bold; color: %s; text-decoration: %s;}" % (self.color.name(), self.decor))
-
-        def _command(self):
-            if not self.dlock:
-                line = re.findall('[^ ]*', str(self.text()))
-                ln = line[0]
-                module = re.findall('([^ ]*)\.', str(self.text()))
-                if module:
-                    module = module[0]
-                    ln = ln.replace(module + '.', '')
-                else:
-                    module = 'main'
-                args = line[1:]
-                for arg in args:
-                    if not arg:
-                        args.remove(arg)
-                try:
-                    self.app.getMethod(ln)(*args)
-                    self.clear()
-                except Exception, e:
-                    self.parent.error(str(e))
-
-    class WinterErrorList(QListWidget):
-        def __init__(self):
-            QListWidget.__init__(self)
-
-    def __init__(self,app):
-        QDockWidget.__init__(self)
-        f = file('%sconfig/debug.cfg' % cwd)
-        self.config = Config(f)
-        self.app=app
-        self.api=API()
-        widget=QTabWidget()
-        log=QWidget()
-        todo=QTextEdit()
-        todo.setPlainText(getFileContent(cwd+'TODO'))
-        todo.setReadOnly(True)
-        self.errorList=self.WinterErrorList()
-        widget.addTab(log,'Log')
-        widget.addTab(self.errorList,'Errors')
-        widget.addTab(todo,'ToDo')
-        layout=QVBoxLayout(log)
-        self.debugLine=self.WinterLine(self)
-        self.debugList=QListWidget()
-        layout.addWidget(self.debugLine)
-        layout.addWidget(self.debugList)
-        log.setLayout(layout)
-        self.setWidget(widget)
-        self.exceptions=[]
-        self.error('boom')
-
-        self.app.addDockWidget(Qt.BottomDockWidgetArea,self)
-        self.hide()
-
-    def makeMessage(self, msg, color='', icon='', bold=True, fgcolor='', ts=False):
-        if ts:
-            timestamp = datetime.now().strftime('%H:%M:%S')
-            item = QListWidgetItem('[%s] %s' % (timestamp, msg))
-        else:
-            item = QListWidgetItem(msg)
-        if 'listitem_bgcolor' in self.config.options and not color:
-        #            color=self.config.options['listitem_bgcolor']
-            if color:
-                item.setBackground(QColor(color))
-        if 'listitem_font' in self.config.options:
-            font = QFont(self.config.options['listitem_font'])
-        else:
-            font = QFont('Sans')
-        font.setBold(bold)
-        font.setPointSize(int(self.config.options['font_size']))
-        item.setFont(font)
-        if not fgcolor and 'listitem_fgcolor' in self.config.options:
-            fgcolor = self.config.options['listitem_fgcolor']
-        item.setTextColor(QColor(fgcolor))
-        if icon:
-            item.setIcon(QIcon(self.api.icons[icon]))
-        return item
-
-    def info(self, msg):
-        self.debugList.addItem(self.makeMessage(msg, 'lightgreen', 'ok', ts=True, fgcolor='black'))
-
-    def error(self, msg, obj=''):
-        if isinstance(msg,Exception):
-            self.exeptions.append(msg)
-        if not obj:
-            item=self.makeMessage(msg, 'red', 'error', ts=True, fgcolor='black')
-            item2=self.makeMessage(msg, 'red', 'error', ts=True, fgcolor='black') #in qt you cant copy widget=((
-        else:
-            item=self.makeMessage('%s::%s' % (obj, msg), 'red', 'error', ts=True, fgcolor='black')
-            item2=self.makeMessage('%s::%s' % (obj, msg), 'red', 'error', ts=True, fgcolor='black')
-        self.errorList.addItem(item)
-        self.debugList.addItem(item2)
-
-    def debug(self, msg):
-        self.debugList.addItem(self.makeMessage(msg, 'lightyellow', 'warning', ts=True, fgcolor='black'))
-
 class WinterQtApp(QMainWindow, WinterApp):
     __apiclass__ = API
 
     def __init__(self):
         QMainWindow.__init__(self)
         uic.loadUi(cwd + "main.ui", self)
-        self.debugger=WinterQtDebug(self)
+
         self._afterMWInit()
         WinterApp.__init__(self)
         self._afterAppInit()
+        self.debugger=WinterQtDebug(self)
 
         screen = QDesktopWidget().screenGeometry()
         QMainWindow.setGeometry(self, 0, 0, screen.width(), screen.height())
@@ -347,6 +229,22 @@ class WinterQtApp(QMainWindow, WinterApp):
         self.toolBar.addWidget(self.smTB)
         self.connect(self.smTB, SIGNAL("clicked()"), self.sm.show)
         self.api.info('Application initialised')
+
+    def input(self,title='Input dialog',text='Please input'):
+        input=''
+        input=QInputDialog.getText(self,title,text)
+        self['debug']('input value: %s' % input[0])
+        return input[0]
+
+    def dialog(self,type='info',title='Dialog',text='oops!!'):
+        if type=='info':
+            QMessageBox.information(self,title,text)
+        elif type=='warning':
+            QMessageBox.warning(self,title,text)
+        elif type=='critical':
+            QMessageBox.critical(self,title,text)
+        elif type=='about':
+            QMessageBox.about(self,title,text)
 
     def toggleDebug(self):
         if self.debugger.isHidden():
@@ -376,3 +274,7 @@ class WinterQtApp(QMainWindow, WinterApp):
         method = self.getMethod(method, module)
         self.connect(tb, SIGNAL("clicked()"), method)
         return tb
+
+    @try_this(API())
+    def getMethod(self, key, module='main'):
+        return WinterApp.getMethod(self,key,module)

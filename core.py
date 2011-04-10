@@ -4,6 +4,7 @@ from painter import Painter
 import random
 import math
 from winterQt import API
+from winterBug import try_this
 
 
 class Core(object):
@@ -21,7 +22,7 @@ class Core(object):
         self.maze = self.simpleMaze(side=self.app.config.options.side, unit=self.app.config.options.unit)
         [self.B, self.N] = self.fasterThenEver(self.maze)
         return self.maze
-
+    @try_this(API())
     def drawMaze(self, maze):
         self.map = self.painter.polygon(maze, width=2, bg_color=self.app.config.options.maze_bg_color)
 
@@ -31,7 +32,7 @@ class Core(object):
         megay = (maze[i - 1][1] + maze[i][1]) / 2 + self.B[i - 1][0] * l
         self.player = self.painter.player(QPointF(megax, megay))
         self.app.graphicsView.centerOn(QPointF(megax, megay))
-
+    @try_this(API())
     def regenMaze(self):
         self.app.scene.clear()
         self.app.scene.init()
@@ -42,6 +43,7 @@ class Core(object):
         self.drawLight()
         self.api.info('Maze regenerated')
 
+    @try_this(API())
     def drawLight(self, coord=''):
         if not coord:
             coord = self.player
@@ -53,7 +55,7 @@ class Core(object):
         self.app.scene.removeItem(self.light)
         del self.light
         self.drawLight(pos)
-
+    @try_this(API())
     def canMove(self, dx, dy):
         for i, b in enumerate(self.B):
             div = dx * self.B[i][1] - dy * self.B[i][0]
@@ -95,7 +97,7 @@ class Core(object):
             B.append((inext[0] - outline[i][0], inext[1] - outline[i][1]))
             N.append(outline[i][0] * inext[1] - outline[i][1] * inext[0])
         return B, N
-
+    @try_this(API())
     def lightUp(self, player, outline):
         visible = []
         u = player
@@ -143,7 +145,7 @@ class Core(object):
                     visible.append(extra)
         return visible
 
-
+    @try_this(API())
     def simpleMaze(self, side=36, unit=20):
         f = []
         for i in xrange(side):
