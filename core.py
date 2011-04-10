@@ -5,7 +5,9 @@ import random
 import math
 from winterQt import API
 from winterBug import try_this
-
+#from profilehooks import profile
+# pip install profilehook; apt-get install python-profiler
+# use @profile decorator for profiling function. lightUp is soooo sloooow
 
 class Core(object):
     def afterInit(self):
@@ -97,6 +99,8 @@ class Core(object):
             B.append((inext[0] - outline[i][0], inext[1] - outline[i][1]))
             N.append(outline[i][0] * inext[1] - outline[i][1] * inext[0])
         return B, N
+
+#    @profile
     @try_this(API())
     def lightUp(self, player, outline):
         visible = []
