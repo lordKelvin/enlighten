@@ -241,8 +241,14 @@ class WinterQtDebug(QDockWidget):
                 except Exception, e:
                     self.parent.error(str(e))
 
+    class WinterErrorList(QListWidget):
+        def __init__(self):
+            QListWidget.__init__(self)
+
     def __init__(self,app):
         QDockWidget.__init__(self)
+        f = file('%sconfig/debug.cfg' % cwd)
+        self.config = Config(f)
         self.app=app
         self.api=API()
         widget=QTabWidget()
@@ -250,7 +256,9 @@ class WinterQtDebug(QDockWidget):
         todo=QTextEdit()
         todo.setPlainText(getFileContent(cwd+'TODO'))
         todo.setReadOnly(True)
+        self.errorList=self.WinterErrorList()
         widget.addTab(log,'Log')
+        widget.addTab(self.errorList,'Errors')
         widget.addTab(todo,'ToDo')
         layout=QVBoxLayout(log)
         self.debugLine=self.WinterLine(self)
@@ -259,13 +267,11 @@ class WinterQtDebug(QDockWidget):
         layout.addWidget(self.debugList)
         log.setLayout(layout)
         self.setWidget(widget)
+        self.exceptions=[]
+        self.error('boom')
 
         self.app.addDockWidget(Qt.BottomDockWidgetArea,self)
         self.hide()
-
-        f = file('%sconfig/debug.cfg' % cwd)
-        self.config = Config(f)
-
 
     def makeMessage(self, msg, color='', icon='', bold=True, fgcolor='', ts=False):
         if ts:
@@ -295,10 +301,16 @@ class WinterQtDebug(QDockWidget):
         self.debugList.addItem(self.makeMessage(msg, 'lightgreen', 'ok', ts=True, fgcolor='black'))
 
     def error(self, msg, obj=''):
+        if isinstance(msg,Exception):
+            self.exeptions.append(msg)
         if not obj:
-            self.debugList.addItem(self.makeMessage(msg, 'red', 'error', ts=True, fgcolor='black'))
+            item=self.makeMessage(msg, 'red', 'error', ts=True, fgcolor='black')
+            item2=self.makeMessage(msg, 'red', 'error', ts=True, fgcolor='black') #in qt you cant copy widget=((
         else:
-            self.debugList.addItem(self.makeMessage('%s::%s' % (obj, msg), 'red', 'error', ts=True, fgcolor='black'))
+            item=self.makeMessage('%s::%s' % (obj, msg), 'red', 'error', ts=True, fgcolor='black')
+            item2=self.makeMessage('%s::%s' % (obj, msg), 'red', 'error', ts=True, fgcolor='black')
+        self.errorList.addItem(item)
+        self.debugList.addItem(item2)
 
     def debug(self, msg):
         self.debugList.addItem(self.makeMessage(msg, 'lightyellow', 'warning', ts=True, fgcolor='black'))
@@ -352,10 +364,10 @@ class WinterQtApp(QMainWindow, WinterApp):
         self.debugger.info(*args,**kwargs)
 
     def error(self,*args,**kwargs):
-        self.debugger.info(*args,**kwargs)
+        self.debugger.error(*args,**kwargs)
 
     def debug(self,*args,**kwargs):
-        self.debugger.info(*args,**kwargs)
+        self.debugger.debug(*args,**kwargs)
 
     def addToolButton(self, icon, module, method):
         tb = QToolButton()
