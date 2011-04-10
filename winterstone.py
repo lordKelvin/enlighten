@@ -4,6 +4,7 @@ import os
 import types
 import weakref
 from config import Config, ConfigMerger
+from snowflake import cwd
 
 #from PySide import QtGui, QtCore, QtUiTools
 #from PySide.QtGui import QMainWindow, QPushButton, QApplication
@@ -118,7 +119,7 @@ class WinterAPI(Borg):
     def __init__(self):
         Borg.__init__(self)
         self.icons = {}
-        icondir = 'icons'
+        icondir = cwd + 'icons/'
         ext = '.png'
         dirList = os.listdir(icondir)
         for fname in dirList:

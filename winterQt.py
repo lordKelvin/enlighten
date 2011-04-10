@@ -5,14 +5,12 @@ import re
 import sys
 from snowflake import *
 
+from config import Config
 from PyQt4.QtGui import *
 from PyQt4 import uic
 from PyQt4.QtCore import *
 
 starttime = datetime.now()
-
-icons = loadIcons(cwd + 'icons/')
-
 from winterstone import WinterObject, WinterApp, WinterAPI#, WinterGUI, WinterMainApp, WinterPM, WinterPlugin
 
 
@@ -200,95 +198,67 @@ class SettingsManager(QMainWindow):
         ' % (pi.name, pi.config.info.description, pi.config.info.author, pi.config.info.version, pi.state)
 
 
-class WinterQtApp(QMainWindow, WinterApp):
-    __apiclass__ = API
+class WinterQtDebug(QDockWidget):
 
-    def __init__(self):
-        QMainWindow.__init__(self)
-        uic.loadUi(cwd + "main.ui", self)
-        self._afterMWInit()
-        WinterApp.__init__(self)
-        self._afterAppInit()
+    class WinterLine(QLineEdit):
+        def __init__(self, parent):
+            QLineEdit.__init__(self)
+            self.app=parent.app
+            self.parent=parent
+            self.connect(self, SIGNAL("textChanged(QString)"), self._newchar)
+            self.connect(self, SIGNAL("returnPressed()"), self._command)
 
-        self.connect(self.debugLine, SIGNAL("textChanged(QString)"), self._newchar)
-        self.connect(self.debugLine, SIGNAL("returnPressed()"), self._command)
-
-        screen = QDesktopWidget().screenGeometry()
-        QMainWindow.setGeometry(self, 0, 0, screen.width(), screen.height())
-
-        self.setWindowTitle(self.config.info['title'])
-        self.setWindowIcon(QIcon(icons['app']))
-        self.dockWidget.hide()
-        self.statusbar.showMessage('Done')
-        self.toolBar.setIconSize(
-                QSize(int(self.config.options['tbicon_size']), int(self.config.options['tbicon_size'])))
-        self.toolBar.setMovable(False)
-        self.addToolButton('warning', 'main', 'toggleDebug')
-
-        self.addToolButton('restart', 'core', 'regenMaze')
-
-        self.core.main()
-
-        self.sm = SettingsManager(self)
-        self.smTB = QToolButton()
-        self.smTB.setIcon(QIcon(icons['configure']))
-        self.toolBar.addWidget(self.smTB)
-        self.connect(self.smTB, SIGNAL("clicked()"), self.sm.show)
-        self.api.info('Application initialised')
-
-    def toggleDebug(self):
-        if self.dockWidget.isHidden():
-            self.dockWidget.show()
-        else:
-            self.dockWidget.hide()
-
-    def _afterMWInit(self):
-        pass
-
-    def _afterAppInit(self):
-        pass
-
-    def _newchar(self):
-        ln = re.findall('[^ ]*', str(self.debugLine.text()))[0]
-        module = re.findall('([^ ]*)\.', str(self.debugLine.text()))
-        if module:
-            module = module[0]
-            ln = ln.replace(module + '.', '')
-        if self.getMethod('main', ln):
-            self.color = QColor(0, 150, 0)
-            self.decor = 'underline'
-            self.dlock = False
-        elif self.getMethod(module, ln):
-            self.color = QColor(0, 150, 0)
-            self.decor = 'underline'
-            self.dlock = False
-        else:
-            self.color = QColor(140, 0, 0)
-            self.decor = 'none'
-            self.dlock = True
-            #            self.color = QColor(30, 144, 255)
-        self.debugLine.setStyleSheet(
-                "QWidget { font: bold; color: %s; text-decoration: %s;}" % (self.color.name(), self.decor))
-
-    def _command(self):
-        if not self.dlock:
-            line = re.findall('[^ ]*', str(self.debugLine.text()))
-            ln = line[0]
-            module = re.findall('([^ ]*)\.', str(self.debugLine.text()))
-            if module:
-                module = module[0]
-                ln = ln.replace(module + '.', '')
+        def _newchar(self):
+            ln = re.findall('[^ ]*', str(self.text()))[0]
+            if self.app.getMethod(ln):
+                self.color = QColor(0, 150, 0)
+                self.decor = 'underline'
+                self.dlock = False
             else:
-                module = 'main'
-            args = line[1:]
-            for arg in args:
-                if not arg:
-                    args.remove(arg)
-            try:
-                self.getMethod(module, ln)(*args)
-                self.debugLine.clear()
-            except Exception, e:
-                self['error'](str(e))
+                self.color = QColor(140, 0, 0)
+                self.decor = 'none'
+                self.dlock = True
+            self.setStyleSheet(
+                    "QWidget { font: bold; color: %s; text-decoration: %s;}" % (self.color.name(), self.decor))
+
+        def _command(self):
+            if not self.dlock:
+                line = re.findall('[^ ]*', str(self.text()))
+                ln = line[0]
+                module = re.findall('([^ ]*)\.', str(self.text()))
+                if module:
+                    module = module[0]
+                    ln = ln.replace(module + '.', '')
+                else:
+                    module = 'main'
+                args = line[1:]
+                for arg in args:
+                    if not arg:
+                        args.remove(arg)
+                try:
+                    self.app.getMethod(ln)(*args)
+                    self.clear()
+                except Exception, e:
+                    self.parent.error(str(e))
+
+    def __init__(self,app):
+        QDockWidget.__init__(self)
+        self.app=app
+        self.api=API()
+        widget=QWidget()
+        layout=QVBoxLayout(self)
+        self.debugLine=self.WinterLine(self)
+        self.debugList=QListWidget()
+        layout.addWidget(self.debugLine)
+        layout.addWidget(self.debugList)
+        widget.setLayout(layout)
+        self.setWidget(widget)
+
+        self.app.addDockWidget(Qt.BottomDockWidgetArea,self)
+        self.hide()
+
+        f = file('%sconfig/debug.cfg' % cwd)
+        self.config = Config(f)
 
 
     def makeMessage(self, msg, color='', icon='', bold=True, fgcolor='', ts=False):
@@ -312,7 +282,7 @@ class WinterQtApp(QMainWindow, WinterApp):
             fgcolor = self.config.options['listitem_fgcolor']
         item.setTextColor(QColor(fgcolor))
         if icon:
-            item.setIcon(QIcon(icons[icon]))
+            item.setIcon(QIcon(self.api.icons[icon]))
         return item
 
     def info(self, msg):
@@ -327,10 +297,63 @@ class WinterQtApp(QMainWindow, WinterApp):
     def debug(self, msg):
         self.debugList.addItem(self.makeMessage(msg, 'lightyellow', 'warning', ts=True, fgcolor='black'))
 
+class WinterQtApp(QMainWindow, WinterApp):
+    __apiclass__ = API
+
+    def __init__(self):
+        QMainWindow.__init__(self)
+        uic.loadUi(cwd + "main.ui", self)
+        self.debugger=WinterQtDebug(self)
+        self._afterMWInit()
+        WinterApp.__init__(self)
+        self._afterAppInit()
+
+        screen = QDesktopWidget().screenGeometry()
+        QMainWindow.setGeometry(self, 0, 0, screen.width(), screen.height())
+
+        self.setWindowTitle(self.config.info['title'])
+        self.setWindowIcon(QIcon(self.api.icons['app']))
+        self.statusbar.showMessage('Done')
+        self.toolBar.setIconSize(
+                QSize(int(self.config.options['tbicon_size']), int(self.config.options['tbicon_size'])))
+        self.toolBar.setMovable(False)
+        self.addToolButton('warning', 'main', 'toggleDebug')
+
+        self.addToolButton('restart', 'core', 'regenMaze')
+
+        self.core.main()
+
+        self.sm = SettingsManager(self)
+        self.smTB = QToolButton()
+        self.smTB.setIcon(QIcon.fromTheme('configure'))
+        self.toolBar.addWidget(self.smTB)
+        self.connect(self.smTB, SIGNAL("clicked()"), self.sm.show)
+        self.api.info('Application initialised')
+
+    def toggleDebug(self):
+        if self.debugger.isHidden():
+            self.debugger.show()
+        else:
+            self.debugger.hide()
+
+    def _afterMWInit(self):
+        pass
+
+    def _afterAppInit(self):
+        pass
+
+    def info(self,*args,**kwargs):
+        self.debugger.info(*args,**kwargs)
+
+    def error(self,*args,**kwargs):
+        self.debugger.info(*args,**kwargs)
+
+    def debug(self,*args,**kwargs):
+        self.debugger.info(*args,**kwargs)
 
     def addToolButton(self, icon, module, method):
         tb = QToolButton()
-        tb.setIcon(QIcon(icons[icon]))
+        tb.setIcon(QIcon.fromTheme(icon,QIcon(self.api.icons[icon])))
         self.toolBar.addWidget(tb)
         method = self.getMethod(method, module)
         self.connect(tb, SIGNAL("clicked()"), method)

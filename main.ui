@@ -45,21 +45,6 @@
     <bool>false</bool>
    </attribute>
   </widget>
-  <widget class="QDockWidget" name="dockWidget">
-   <attribute name="dockWidgetArea">
-    <number>8</number>
-   </attribute>
-   <widget class="QWidget" name="dockWidgetContents">
-    <layout class="QVBoxLayout" name="verticalLayout">
-     <item>
-      <widget class="QLineEdit" name="debugLine"/>
-     </item>
-     <item>
-      <widget class="QListWidget" name="debugList"/>
-     </item>
-    </layout>
-   </widget>
-  </widget>
  </widget>
  <resources/>
  <connections/>

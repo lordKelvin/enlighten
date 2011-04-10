@@ -12,7 +12,7 @@ class Painter(object):
         self.scene = scene
 
     def line(self, x1, y1, x2, y2, color='black'):
-        line = self.scene.addLine(QLineF(x1, y1, x2, y2), QPen(QColor(color))) # is this a "return" pascal-style?
+        line = self.scene.addLine(QLineF(x1, y1, x2, y2), QPen(QColor(color))) # is this a "return" pascal-style? #no. most of qt methods return created object. And i do same (look polygon method below), but this method unused and i missed return statement.
 
     def polygon(self, raw, fg_color='black', width=5, bg_color='white', alpha=1):
         points = []

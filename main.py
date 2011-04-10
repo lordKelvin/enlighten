@@ -8,7 +8,6 @@ from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 
 starttime = datetime.now()
-icons = loadIcons(cwd + 'icons/')
 
 from winterQt import WinterQtApp, API
 
