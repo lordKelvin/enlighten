@@ -13,6 +13,9 @@ from winterQt import WinterQtApp, API
 
 __author__ = 'averrin, lordKelvin' # >:(
 
+
+
+
 class Scene(QGraphicsScene):
     def __init__(self, parent=None):
         QGraphicsScene.__init__(self, parent)
@@ -127,6 +130,8 @@ class UI(WinterQtApp):
         except Exception, e:
             self.api.error(e)
 
+    def echo(self,*args, **kwargs):
+        self.mainBrowser.append(args[0])
 
 def main():
     qtapp = QApplication(sys.argv)

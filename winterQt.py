@@ -14,20 +14,28 @@ starttime = datetime.now()
 
 
 class API(WinterAPI):
-    def setText(self, *args, **kwargs):
-        self.ex('setText')(*args, **kwargs)
 
     def echo(self, *args, **kwargs):
         self.ex('echo')(*args, **kwargs)
 
+
     def info(self, *args, **kwargs):
-        self.ex('info')(*args, **kwargs)
+        if hasattr(self,'debugger'):
+            self.debugger.info(*args, **kwargs)
+        else:
+            self.echo(*args,**kwargs)
 
     def debug(self, *args, **kwargs):
-        self.ex('debug')(*args, **kwargs)
+        if hasattr(self,'debugger'):
+            self.debugger.debug(*args, **kwargs)
+        else:
+            self.echo(*args,**kwargs)
 
     def error(self, *args, **kwargs):
-        self.ex('error')(*args, **kwargs)
+        if hasattr(self,'debugger'):
+            self.debugger.error(*args, **kwargs)
+        else:
+            self.echo(*args,**kwargs)
 
 
 class myDelegate(QItemDelegate):
@@ -206,7 +214,10 @@ class WinterQtApp(QMainWindow, WinterApp):
         self._afterMWInit()
         WinterApp.__init__(self)
         self._afterAppInit()
-        self.debugger=WinterQtDebug(self)
+        if self.config.options.debug:
+            self.debugger=WinterQtDebug(self)
+            self.api.debugger=self.debugger
+            self.addToolButton('warning', 'main', 'toggleDebug')
 
         screen = QDesktopWidget().screenGeometry()
         QMainWindow.setGeometry(self, 0, 0, screen.width(), screen.height())
@@ -217,7 +228,7 @@ class WinterQtApp(QMainWindow, WinterApp):
         self.toolBar.setIconSize(
                 QSize(int(self.config.options['tbicon_size']), int(self.config.options['tbicon_size'])))
         self.toolBar.setMovable(False)
-        self.addToolButton('warning', 'main', 'toggleDebug')
+
 
         self.addToolButton('restart', 'core', 'regenMaze')
 
@@ -259,13 +270,16 @@ class WinterQtApp(QMainWindow, WinterApp):
         pass
 
     def info(self,*args,**kwargs):
-        self.debugger.info(*args,**kwargs)
+        self.api.info(*args,**kwargs)
 
     def error(self,*args,**kwargs):
-        self.debugger.error(*args,**kwargs)
+        self.api.error(*args,**kwargs)
 
     def debug(self,*args,**kwargs):
-        self.debugger.debug(*args,**kwargs)
+        self.api.debug(*args,**kwargs)
+
+    def echo(self,*args, **kwargs):
+        print args[0]
 
     def addToolButton(self, icon, module, method):
         tb = QToolButton()

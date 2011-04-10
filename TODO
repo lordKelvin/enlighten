@@ -11,6 +11,8 @@ Debugger
 * Object Inspector (objects browser if it possible)
 * Exception viewer
 * Todo widget for add and save
+* core dir completion
+* debug configurer
 
 Painter
 -------

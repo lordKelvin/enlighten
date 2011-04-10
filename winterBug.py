@@ -31,12 +31,17 @@ class WinterQtDebug(QDockWidget):
             self.connect(self, SIGNAL("textChanged(QString)"), self._newchar)
             self.connect(self, SIGNAL("returnPressed()"), self._command)
             self.defaults = dir(self.parent.app)
+#            self.defaults+=dir(self.parent.app.core)
             self.completerList = QStringList()
             for i in self.defaults:
                 if not i.startswith('_'):
                     self.completerList.append(QString(i))
             lineEditCompleter = QCompleter(self.completerList)
-            lineEditCompleter.setCompletionMode(QCompleter.InlineCompletion)
+            if not self.parent.config.options.popup_completion:
+                lineEditCompleter.setCompletionMode(QCompleter.InlineCompletion)
+            else:
+                lineEditCompleter.setCompletionMode(QCompleter.PopupCompletion)
+
             lineEditCompleter.setCaseSensitivity(Qt.CaseInsensitive)
             self.setCompleter(lineEditCompleter)
 

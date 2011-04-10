@@ -266,9 +266,11 @@ class WinterApp(object):
 
     def __init__(self):
         self.api = self.__class__.__apiclass__()
+
         global API
         API = self.__class__.__apiclass__
         self.loadConfigs()
+        self.api.config=self.config
         from core import Core
 
         self.core = Core()
