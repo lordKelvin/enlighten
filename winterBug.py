@@ -30,6 +30,14 @@ class WinterQtDebug(QDockWidget):
             self.parent=parent
             self.connect(self, SIGNAL("textChanged(QString)"), self._newchar)
             self.connect(self, SIGNAL("returnPressed()"), self._command)
+            self.defaults = dir(self.parent.app)
+            self.completerList = QStringList()
+            for i in self.defaults:
+                self.completerList.append(QString(i))
+            lineEditCompleter = QCompleter(self.completerList)
+            lineEditCompleter.setCompletionMode(QCompleter.InlineCompletion)
+            lineEditCompleter.setCaseSensitivity(Qt.CaseInsensitive)
+            self.setCompleter(lineEditCompleter)
 
         def _newchar(self):
             ln = re.findall('[^ ]*', str(self.text()))[0]
