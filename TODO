@@ -1,2 +1,13 @@
+Enlighten
+---------
+* More than one light source
+
+Application
+-----------
+* Full plugin implementation
+
+Debugger
+--------
 * Object Inspector
 * Exception viewer
+* Todo widget for todo add and save
