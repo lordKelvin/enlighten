@@ -33,11 +33,36 @@ class WinterQtDebug(QDockWidget):
             self.defaults = dir(self.parent.app)
             self.completerList = QStringList()
             for i in self.defaults:
-                self.completerList.append(QString(i))
+                if not i.startswith('_'):
+                    self.completerList.append(QString(i))
             lineEditCompleter = QCompleter(self.completerList)
             lineEditCompleter.setCompletionMode(QCompleter.InlineCompletion)
             lineEditCompleter.setCaseSensitivity(Qt.CaseInsensitive)
             self.setCompleter(lineEditCompleter)
+
+            self.hist_a=[]
+            self.hist_b=[]
+
+        def keyPressEvent(self, event):
+        #        print(event.key())
+            if event.key() == 16777216:
+                self.clear()
+            elif event.key() in [16777235]:
+                print self.hist_a
+                if str(self.text()):
+                    self.hist_b.append(str(self.text()))
+                    self.hist_b=list(set(self.hist_b))
+                if self.hist_a:
+                    self.setText(str(self.hist_a.pop()))
+            elif event.key() in [16777237]:
+                print self.hist_b
+                if str(self.text()):
+                    self.hist_a.append(str(self.text()))
+                    self.hist_a=list(set(self.hist_a))
+                if self.hist_b:
+                    self.setText(str(self.hist_b.pop()))
+            else:
+                QLineEdit.keyPressEvent(self,event)
 
         def _newchar(self):
             ln = re.findall('[^ ]*', str(self.text()))[0]
@@ -68,6 +93,8 @@ class WinterQtDebug(QDockWidget):
                         args.remove(arg)
                 try:
                     self.app.getMethod(ln)(*args)
+                    self.hist_a.append(str(self.text()))
+                    self.hist_a=list(set(self.hist_a))
                     self.clear()
                 except Exception, e:
                     self.parent.error(str(e))
