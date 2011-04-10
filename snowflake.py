@@ -11,3 +11,9 @@ def loadIcons(icondir, ext='.png'):
         if fname.endswith(ext):
             icons[fname[:-4]] = str(icondir + fname)
     return icons
+
+def getFileContent(file):
+    file=open(file,'r')
+    content=file.read()
+    file.close()
+    return content
