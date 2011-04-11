@@ -138,12 +138,15 @@ class WinterPM(object):
         Plugin manager
     '''
     def activate(self,plugin):
-        plugin.activate()
+        if plugin.activate():
+            plugin.state='Activated'
+            if not plugin in self.plugins:
+                self.plugins.append(plugin)
 
     def deactivate(self,plugin):
         plugin.deactivate()
         self.plugins.remove(plugin)
-        del plugin #lolwut?
+        plugin.state='Deactivated'
 
 
     def findModules(self):
@@ -233,12 +236,14 @@ class WinterPlugin(WinterObject):
             Overload...able method for activate
         '''
         self.active=True
+        return True
 
     def deactivate(self):
         '''
             Overload...able method for activate
         '''
         self.active=False
+        return True
 
 class WinterApp(object):
     '''
