@@ -78,64 +78,117 @@ class myDelegate(QItemDelegate):
 
 class SettingsManager(QMainWindow):
     #TODO: plugins settings, list of plugins, array settings
+
+    class settingsTable(QTableWidget):
+
+        def fill(self,conf_dict,conf_file):
+            self.conf_dict=conf_dict
+            self.conf_file=conf_file
+            sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+            sizePolicy.setHorizontalStretch(0)
+            sizePolicy.setVerticalStretch(0)
+            sizePolicy.setHeightForWidth(self.sizePolicy().hasHeightForWidth())
+            self.setSizePolicy(sizePolicy)
+            self.setMaximumSize(QSize(16777215, 16777215))
+            self.setAutoFillBackground(True)
+            self.setColumnCount(2)
+            self.setRowCount(0)
+            item = QTableWidgetItem()
+            self.setHorizontalHeaderItem(0, item)
+            item = QTableWidgetItem()
+            self.setHorizontalHeaderItem(1, item)
+            self.horizontalHeader().setDefaultSectionSize(200)
+            self.horizontalHeader().setStretchLastSection(True)
+            self.verticalHeader().setStretchLastSection(False)
+#            self.verticalLayout_2.addWidget(self)
+            self.delegate = myDelegate(self)
+            self.setItemDelegateForColumn(0,self.delegate)
+            row = 0
+            self.items=[]
+            array=self.conf_dict
+            for var in array:
+                if not var.endswith('_desc') and var != 'activated' and not var.endswith('_variants'):
+                    self.insertRow(row)
+                    self.setVerticalHeaderItem(row, QTableWidgetItem(var))
+                    vitem = QTableWidgetItem(str(array[var]))
+                    vitem.name = var
+                    self.items.append(vitem)
+                    if array[var] in [True, False]:
+                        vitem.setFlags(Qt.ItemFlags(Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled))
+                        check = Qt.Checked if array[var] else Qt.Unchecked
+                        vitem.setCheckState(check)
+                    self.setItem(row, 0, vitem)
+                    if '%s_desc' % var in array:
+                        desc = array['%s_desc' % var]
+                    else:
+                        desc = ''
+                    if '%s_variants' % var in array:
+                        vitem.variants=array['%s_variants' % var]
+                    ditem = QTableWidgetItem(desc)
+                    ditem.setFlags(Qt.ItemFlags(Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled))
+                    self.setItem(row, 1, ditem)
+                    row += 1
+
+            
     def __init__(self, app, *args, **kwargs):
         QMainWindow.__init__(self)
-        uic.loadUi(cwd + "sm.ui", self)
-        self.connect(self.restartButton, SIGNAL("clicked()"), self.restart)
+        self.resize(746, 545)
+        self.centralwidget = QWidget(self)
+        self.verticalLayout_3 = QVBoxLayout(self.centralwidget)
+        self.tabWidget = QTabWidget(self.centralwidget)
+        self.tabWidget.setTabPosition(QTabWidget.West)
+        self.tabWidget.setTabShape(QTabWidget.Rounded)
+        self.tab_2 = QWidget()
+        self.verticalLayout_2 = QVBoxLayout(self.tab_2)
+
+        self.verticalLayout_3.addWidget(self.tabWidget)
+        self.horizontalLayout = QHBoxLayout()
+        spacerItem = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.horizontalLayout.addItem(spacerItem)
+        self.cancelButton = QPushButton('Cancel',self.centralwidget)
+        self.horizontalLayout.addWidget(self.cancelButton)
+        self.restartButton = QPushButton('Apply and Restart',self.centralwidget)
+        self.horizontalLayout.addWidget(self.restartButton)
+        self.applyButton = QPushButton('Apply',self.centralwidget)
+        self.horizontalLayout.addWidget(self.applyButton)
+        self.verticalLayout_3.addLayout(self.horizontalLayout)
+        self.setCentralWidget(self.centralwidget)
+        self.statusBar = QStatusBar(self)
+        self.setStatusBar(self.statusBar)
 
         self.app = app
         self.app.sm = self
-        if self.app.config.options['plugins']:
+
+        self.tableWidget=self.settingsTable()
+        self.tableWidget.fill(self.app.config.options,'main.cfg')
+        self.sttab=self.tabWidget.addTab(self.tableWidget,'Settings')
+
+
+        if self.app.config.options.debug:
+            self.dbgTable=self.settingsTable(self.tabWidget)
+            self.dbgTable.fill(self.app.debugger.config.options,'debug.cfg')
+            self.dbgtab=self.tabWidget.addTab(self.dbgTable,'Debug')
+
+        if self.app.config.options.plugins:
+            self.tabPlugins = QWidget()
+            self.verticalLayout = QVBoxLayout(self.tabPlugins)
+            self.listWidget = QListWidget(self.tabPlugins)
+            self.verticalLayout.addWidget(self.listWidget)
+            self.plainTextEdit = QPlainTextEdit(self.tabPlugins)
+            self.verticalLayout.addWidget(self.plainTextEdit)
+            self.tabWidget.addTab(self.tabPlugins, 'Plugins')
             self.loadPlugins()
             self.connect(self.listWidget, SIGNAL("itemClicked(QListWidgetItem *)"), self.echoInfo)
             self.connect(self.listWidget, SIGNAL("itemChanged(QListWidgetItem *)"), self.togglePlugin)
-        else:
-            self.tabWidget.removeTab(1) #tabPlugins
-            self.tabWidget.removeTab(1) #tabPlugins config.options
 
-        self.loadSettings()
+
+        self.connect(self.restartButton, SIGNAL("clicked()"), self.restart)
+        self.connect(self.cancelButton, SIGNAL("clicked()"), self.close)
         self.connect(self.applyButton, SIGNAL("clicked()"), self.applyOptions)
-
-    def loadSettings(self):
-        self.opts = {}
-        self.popts = {}
-        self.opts.update(self.app.config.options)
-        if self.app.config.options.plugins:
-            self.popts.update(self.app.config.plugins) #LIE!!!!
-        self.fill(self.opts, self.tableWidget)
-        if self.app.config.options.plugins:
-            self.fill(self.popts, self.tableWidget_2)
-
         self.connect(self.tableWidget, SIGNAL("itemChanged(QTableWidgetItem *)"), self.changeOption)
-        self.connect(self.tableWidget_2, SIGNAL("itemChanged(QTableWidgetItem *)"), self.changeOption)
+#        self.onnect(self.tableWidget_2, SIGNAL("itemChanged(QTableWidgetItem *)"), self.changeOption)
 
-    def fill(self, array, widget):
-        self.delegate = myDelegate(self)
-        widget.setItemDelegateForColumn(0,self.delegate)
-        row = 0
-        self.items=[]
-        for var in array:
-            if not var.endswith('_desc') and var != 'activated' and not var.endswith('_variants'):
-                widget.insertRow(row)
-                widget.setVerticalHeaderItem(row, QTableWidgetItem(var))
-                vitem = QTableWidgetItem(str(array[var]))
-                vitem.name = var
-                self.items.append(vitem)
-                if array[var] in [True, False]:
-                    vitem.setFlags(Qt.ItemFlags(Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled))
-                    check = Qt.Checked if array[var] else Qt.Unchecked
-                    vitem.setCheckState(check)
-                widget.setItem(row, 0, vitem)
-                if '%s_desc' % var in array:
-                    desc = array['%s_desc' % var]
-                else:
-                    desc = ''
-                if '%s_variants' % var in array:
-                    vitem.variants=array['%s_variants' % var]
-                ditem = QTableWidgetItem(desc)
-                ditem.setFlags(Qt.ItemFlags(Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled))
-                widget.setItem(row, 1, ditem)
-                row += 1
+
 
     def loadPlugins(self):
         for plugin in self.app.pm.plugins:
