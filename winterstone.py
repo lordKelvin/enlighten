@@ -137,6 +137,14 @@ class WinterPM(object):
     '''
         Plugin manager
     '''
+    def activate(self,plugin):
+        plugin.activate()
+
+    def deactivate(self,plugin):
+        plugin.deactivate()
+        self.plugins.remove(plugin)
+        del plugin #lolwut?
+
 
     def findModules(self):
         '''
@@ -183,17 +191,22 @@ class WinterPM(object):
 
     def activateAll(self):
         for plugin in self.plugins:
-            try:
-                plugin.activate()
-                plugin.active = True
-                plugin.state = 'Activated'
-            except Exception, e:
+            if plugin.name in self.config.plugins.active:
+                try:
+                    plugin.activate()
+                    plugin.active = True
+                    plugin.state = 'Activated'
+                except Exception, e:
+                    plugin.active = False
+                    plugin.state = e
+                    self.api.error(e)
+            else:
+                plugin.state='Deactivated'
                 plugin.active = False
-                plugin.state = e
-                self.api.error(e)
 
 
-    def __init__(self):
+    def __init__(self,config):
+        self.config=config
         self.api = API()
         self.modules = [self.loadModule(name) for name in self.findModules()]
         self.plugins = [self.processPlugin(module) for module in self.modules]
@@ -219,8 +232,13 @@ class WinterPlugin(WinterObject):
         '''
             Overload...able method for activate
         '''
-        pass
+        self.active=True
 
+    def deactivate(self):
+        '''
+            Overload...able method for activate
+        '''
+        self.active=False
 
 class WinterApp(object):
     '''
@@ -244,20 +262,25 @@ class WinterApp(object):
         return self.getMethod('main', key)
 
     def loadConfigs(self):
-        self.config = ''
-        self.configFiles = ['config/main.cfg', 'config/plugins.cfg']
-        self.configs = []
+        f = file(cwd+'config/main.cfg')
+        self.config = Config(f)
+        f = file(cwd+'config/plugins.cfg')
+        self.p_config = Config(f)
+        f.close()
+#        self.configFiles = ['config/main.cfg', 'config/plugins.cfg']
+#        self.configs = []
+#
+#        TODO: make some alternative for divided save
+#        merger = ConfigMerger()
+#        for cf in self.configFiles:
+#            f = file(cf)
+#            temp = Config(f)
+#            self.configs.append(temp)
+#            if self.config:
+#                merger.merge(self.config, temp)
+#            else:
+#                self.config = temp
 
-        #TODO: make some alternative for divided save
-        merger = ConfigMerger()
-        for cf in self.configFiles:
-            f = file(cf)
-            temp = Config(f)
-            self.configs.append(temp)
-            if self.config:
-                merger.merge(self.config, temp)
-            else:
-                self.config = temp
 
     def __init__(self):
         self.api = self.__class__.__apiclass__()
@@ -266,6 +289,7 @@ class WinterApp(object):
         API = self.__class__.__apiclass__
         self.loadConfigs()
         self.api.config=self.config
+        self.api.ex = self.getMethod
         from core import Core
 
         self.core = Core()
@@ -273,9 +297,8 @@ class WinterApp(object):
         self.core.afterInit()
         if self.config.options.plugins:
             WinterPlugin()
-            self.pm = self.__class__.__pmclass__()
-            self.pm.activateAll()
-        self.api.ex = self.getMethod
+            self.pm = self.__class__.__pmclass__(self.p_config)
+#            self.pm.activateAll()
 
 '''
 class WinterGUI(QMainWindow):

@@ -234,30 +234,14 @@ class SettingsManager(QMainWindow):
     def applyOptions(self):
         for cfg in self.configs:
             cfg.save()
+        if self.app.config.options.plugins:
+            self.savePlugins()
         self.close()
 
     def restart(self):
         self.applyOptions()
         python = sys.executable
         os.execl(python, python, *sys.argv)
-
-    def changeOption(self, item):
-        if item.checkState() == 2 or (not item.checkState() and item.text() in ['False', 'True']):
-            text = 'True' if item.checkState() else 'False'
-            item.setText(text)
-        if item.name in self.opts:
-            value = item.text().__str__().encode('cp1251')
-            if value in ['True', 'False']:
-                self.opts[item.name] = eval(value)
-            else:
-                try:
-                    value = int(value)
-                except ValueError:
-                    pass
-                self.opts[item.name] = value
-        else:
-            self.popts[item.name] = item.text()
-        self.statusBar.showMessage('%s change to %s' % (item.name, item.text()))
 
     def echoInfo(self, item):
         info = self.getInfo(item.plugin)
@@ -266,16 +250,24 @@ class SettingsManager(QMainWindow):
     def togglePlugin(self, item):
         state = item.checkState()
         if state:
-            self.app.activate(item.plugin.name, permanent=True)
+            self.app.pm.activate(item.plugin)
         else:
-            self.app.deactivate(item.plugin.name, permanent=True)
+            self.app.pm.deactivate(item.plugin)
 
-        check = Qt.Checked if item.plugin.name in self.app.pm.active else Qt.Unchecked
+        check = Qt.Checked if item.plugin.active else Qt.Unchecked
         item.setCheckState(check)
         if check == Qt.Checked:
             self.statusBar.showMessage('%s activated' % item.plugin.name)
         else:
             self.statusBar.showMessage('%s deactivated' % item.plugin.name)
+
+    def savePlugins(self):
+        names=[]
+        for p in self.app.pm.plugins:
+            names.append(p.name)
+        self.app.p_config.plugins.active=names
+        f = file(cwd+'config/plugins.cfg','w')
+        self.app.p_config.save(f)
 
     def getInfo(self, pi):
         return 'Name: %s\n \
@@ -315,12 +307,19 @@ class WinterQtApp(QMainWindow, WinterApp):
 
         self.core.main()
 
+
+        if self.config.options.plugins:
+            self.pm.activateAll()
+            self.api.info('Plugins initialised')
+
         self.sm = SettingsManager(self)
         self.smTB = QToolButton()
         self.smTB.setIcon(QIcon.fromTheme('configure'))
         self.toolBar.addWidget(self.smTB)
         self.connect(self.smTB, SIGNAL("clicked()"), self.sm.show)
         self.api.info('Application initialised')
+
+
 
     def input(self,title='Input dialog',text='Please input'):
         input=''
