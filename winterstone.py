@@ -259,11 +259,6 @@ class WinterApp(object):
             else:
                 self.config = temp
 
-    def saveConfig(self):
-        for i, cfg in enumerate(self.configs):
-            f = file(self.configFiles[i], 'w')
-            cfg.save(f)
-
     def __init__(self):
         self.api = self.__class__.__apiclass__()
 

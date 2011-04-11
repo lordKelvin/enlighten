@@ -171,19 +171,19 @@ class WinterQtDebug(QDockWidget):
             item = QListWidgetItem('[%s] %s' % (timestamp, msg))
         else:
             item = QListWidgetItem(msg)
-        if 'listitem_bgcolor' in self.config.options and not color:
+#        if 'listitem_bgcolor' in self.config.options and not color:
         #            color=self.config.options['listitem_bgcolor']
-            if color:
-                item.setBackground(QColor(color))
-        if 'listitem_font' in self.config.options:
-            font = QFont(self.config.options['listitem_font'])
+        if color:
+            item.setBackground(QColor(color))
+        if 'item_font' in self.config.options:
+            font = QFont(self.config.options['item_font'])
         else:
             font = QFont('Sans')
         font.setBold(bold)
         font.setPointSize(int(self.config.options['font_size']))
         item.setFont(font)
-        if not fgcolor and 'listitem_fgcolor' in self.config.options:
-            fgcolor = self.config.options['listitem_fgcolor']
+#        if not fgcolor and 'listitem_fgcolor' in self.config.options:
+#            fgcolor = self.config.options['listitem_fgcolor']
         item.setTextColor(QColor(fgcolor))
         if icon:
             item.setIcon(QIcon(self.api.icons[icon]))

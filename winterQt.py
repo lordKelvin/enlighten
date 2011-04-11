@@ -38,51 +38,57 @@ class API(WinterAPI):
             self.echo(*args,**kwargs)
 
 
-class myDelegate(QItemDelegate):
-    def __init__(self, parent):
-        QItemDelegate.__init__(self, parent)
-        self.parent = parent
-    def paint(self, painter, option, index):
-        QItemDelegate.paint(self, painter, option, index)
-    def createEditor(self, parent, option, index):
-        value = index.model().data(index, Qt.EditRole).toString()
-        item=self.parent.items[index.row()]
-        try:
-            value=int(value)
-            editor = QSpinBox(parent)
-        except ValueError:
-            if hasattr(item,'variants'):
-                editor = QComboBox(parent)
-                editor.addItems(item.variants)
-            else:
-                editor = QLineEdit(parent)
-        return editor
-    def setEditorData(self, editor, index):
-        value = index.model().data(index, Qt.EditRole).toString()
-        item=self.parent.items[index.row()]
-        try:
-            editor.setText(value)
-        except AttributeError:
-            try:
-                editor.setValue(int(value))
-            except AttributeError:
-                editor.setCurrentIndex(list(item.variants).index(value))
-    def setModelData(self, editor, model, index):
-        try:
-            value = editor.text()
-        except AttributeError:
-            value = editor.currentText()
-        model.setData(index, value, Qt.EditRole)
-    def updateEditorGeometry(self, editor, option, index):
-        editor.setGeometry(option.rect)
+
 
 class SettingsManager(QMainWindow):
     #TODO: plugins settings, list of plugins, array settings
 
+    class myDelegate(QItemDelegate):
+        def __init__(self, parent):
+            QItemDelegate.__init__(self, parent)
+            self.parent = parent
+        def paint(self, painter, option, index):
+            QItemDelegate.paint(self, painter, option, index)
+        def createEditor(self, parent, option, index):
+            value = index.model().data(index, Qt.EditRole).toString()
+            item=self.parent.items[index.row()]
+            try:
+                value=int(value)
+                editor = QSpinBox(parent)
+            except ValueError:
+                if hasattr(item,'variants'):
+                    editor = QComboBox(parent)
+                    editor.addItems(item.variants)
+                else:
+                    editor = QLineEdit(parent)
+            return editor
+        def setEditorData(self, editor, index):
+            value = index.model().data(index, Qt.EditRole).toString()
+            item=self.parent.items[index.row()]
+            try:
+                editor.setText(value)
+            except AttributeError:
+                try:
+                    editor.setValue(int(value))
+                except AttributeError:
+                    editor.setCurrentIndex(list(item.variants).index(value))
+        def setModelData(self, editor, model, index):
+            try:
+                value = editor.text()
+            except AttributeError:
+                value = editor.currentText()
+            model.setData(index, value, Qt.EditRole)
+        def updateEditorGeometry(self, editor, option, index):
+            editor.setGeometry(option.rect)
+
+
     class settingsTable(QTableWidget):
 
-        def fill(self,conf_dict,conf_file):
-            self.conf_dict=conf_dict
+        def fill(self,conf,conf_file,parent):
+            self.parent=parent
+            self.parent.configs.append(self)
+            self.conf=conf
+            self.conf_dict=conf.options
             self.conf_file=conf_file
             sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             sizePolicy.setHorizontalStretch(0)
@@ -101,7 +107,11 @@ class SettingsManager(QMainWindow):
             self.horizontalHeader().setStretchLastSection(True)
             self.verticalHeader().setStretchLastSection(False)
 #            self.verticalLayout_2.addWidget(self)
-            self.delegate = myDelegate(self)
+
+
+            self.connect(self, SIGNAL("itemChanged(QTableWidgetItem *)"), self.changeOption)
+
+            self.delegate = self.parent.myDelegate(self)
             self.setItemDelegateForColumn(0,self.delegate)
             row = 0
             self.items=[]
@@ -125,11 +135,31 @@ class SettingsManager(QMainWindow):
                     if '%s_variants' % var in array:
                         vitem.variants=array['%s_variants' % var]
                     ditem = QTableWidgetItem(desc)
+                    ditem.name='ditem'
                     ditem.setFlags(Qt.ItemFlags(Qt.ItemIsSelectable | Qt.ItemIsUserCheckable | Qt.ItemIsEnabled))
                     self.setItem(row, 1, ditem)
                     row += 1
 
-            
+        def changeOption(self, item):
+            if item.checkState() == 2 or (not item.checkState() and item.text() in ['False', 'True']):
+                text = 'True' if item.checkState() else 'False'
+                item.setText(text)
+            value = item.text().__str__().encode('cp1251')
+            if item.name in self.conf_dict:
+                if value in ['True', 'False']:
+                    self.conf_dict[item.name] = eval(value)
+                else:
+                    try:
+                        value = int(value)
+                    except ValueError:
+                        pass
+                    self.conf_dict[item.name] = value
+                self.parent.statusBar.showMessage('%s change to %s' % (item.name, item.text()))
+
+        def save(self):
+            f = file(self.conf_file, 'w')
+            self.conf.save(f)
+
     def __init__(self, app, *args, **kwargs):
         QMainWindow.__init__(self)
         self.resize(746, 545)
@@ -158,15 +188,16 @@ class SettingsManager(QMainWindow):
 
         self.app = app
         self.app.sm = self
+        self.configs=[]
 
         self.tableWidget=self.settingsTable()
-        self.tableWidget.fill(self.app.config.options,'main.cfg')
+        self.tableWidget.fill(self.app.config,cwd+'config/main.cfg',self)
         self.sttab=self.tabWidget.addTab(self.tableWidget,'Settings')
 
 
         if self.app.config.options.debug:
             self.dbgTable=self.settingsTable(self.tabWidget)
-            self.dbgTable.fill(self.app.debugger.config.options,'debug.cfg')
+            self.dbgTable.fill(self.app.debugger.config,cwd+'config/debug.cfg',self)
             self.dbgtab=self.tabWidget.addTab(self.dbgTable,'Debug')
 
         if self.app.config.options.plugins:
@@ -185,7 +216,6 @@ class SettingsManager(QMainWindow):
         self.connect(self.restartButton, SIGNAL("clicked()"), self.restart)
         self.connect(self.cancelButton, SIGNAL("clicked()"), self.close)
         self.connect(self.applyButton, SIGNAL("clicked()"), self.applyOptions)
-        self.connect(self.tableWidget, SIGNAL("itemChanged(QTableWidgetItem *)"), self.changeOption)
 #        self.onnect(self.tableWidget_2, SIGNAL("itemChanged(QTableWidgetItem *)"), self.changeOption)
 
 
@@ -202,10 +232,8 @@ class SettingsManager(QMainWindow):
             self.listWidget.addItem(item)
 
     def applyOptions(self):
-        self.app.config.options = self.opts
-        #        if self.app.config.options.plugins:
-        #            self.app.project.config['Plugins']=self.popts
-        self.app.saveConfig()
+        for cfg in self.configs:
+            cfg.save()
         self.close()
 
     def restart(self):
