@@ -8,6 +8,7 @@ from winterBug import try_this
 #from profilehooks import profile
 # pip install profilehook; apt-get install python-profiler
 # use @profile decorator for profiling function. lightUp is soooo sloooow
+from cmaze import *
 
 class Core(object):
     def afterInit(self):
@@ -18,23 +19,23 @@ class Core(object):
     def main(self):
         self.drawMaze(self.genMaze())
         self.drawLight()
-        self.app.graphicsView.centerOn(QPointF(self.player.x(), self.player.y()))
+#        self.app.graphicsView.centerOn(QPointF(self.player.x(), self.player.y()))
 
     def genMaze(self):
         self.maze = self.simpleMaze(side=self.app.config.options.side, unit=self.app.config.options.unit)
-        [self.B, self.N] = self.fasterThenEver(self.maze)
+#        [self.B, self.N] = self.fasterThenEver(self.maze)
         return self.maze
-    @try_this(API())
+#    @try_this(API())
     def drawMaze(self, maze):
-        self.map = self.painter.polygon(maze, width=2, bg_color=self.app.config.options.maze_bg_color)
+        self.map = self.painter.polygon(maze, width=2, bg_color=self.app.config.options.maze_bg_color,is_maze=True)
 
         i = random.randrange(len(maze))
-        l = self.app.config.options.unit / (2 * math.hypot(self.B[i - 1][0], self.B[i - 1][1]))
-        megax = (maze[i - 1][0] + maze[i][0]) / 2 - self.B[i - 1][1] * l
-        megay = (maze[i - 1][1] + maze[i][1]) / 2 + self.B[i - 1][0] * l
-        self.player = self.painter.player(QPointF(megax, megay))
-        self.app.graphicsView.centerOn(QPointF(megax, megay))
-    @try_this(API())
+#        l = self.app.config.options.unit / (2 * math.hypot(self.B[i - 1][0], self.B[i - 1][1]))
+#        megax = (maze[i - 1][0] + maze[i][0]) / 2 - self.B[i - 1][1] * l
+#        megay = (maze[i - 1][1] + maze[i][1]) / 2 + self.B[i - 1][0] * l
+        self.player = self.painter.player(QPointF(100,100))
+#        self.app.graphicsView.centerOn(QPointF(megax, megay))
+#    @try_this(API())
     def regenMaze(self):
         self.app.scene.clear()
         self.app.scene.init()
@@ -45,7 +46,7 @@ class Core(object):
         self.drawLight()
         self.api.info('Maze regenerated')
 
-    @try_this(API())
+#    @try_this(API())
     def drawLight(self, coord=''):
         if not coord:
             coord = self.player
@@ -91,109 +92,84 @@ class Core(object):
             self.player.moveBy(0, 10)
             self.app.refresh()
 
-    def fasterThenEver(self, outline):
-        B = [] # B[ n ]: from outline[ n ] to outline[ n + 1 ]
-        N = [] # N[ n ]: outline[n] x outline[n + 1]
-        for i in xrange(len(outline)):
-            inext = outline[(i + 1) % len(outline)]
-            B.append((inext[0] - outline[i][0], inext[1] - outline[i][1]))
-            N.append(outline[i][0] * inext[1] - outline[i][1] * inext[0])
-        return B, N
 
-#    @profile
-    @try_this(API())
-    def lightUp(self, player, outline):
-        visible = []
-        u = player
-        for i, c in enumerate(outline):
-            rib0 = u[0] * self.B[i - 1][1] - u[1] * self.B[i - 1][0] > self.N[i - 1]
-            rib1 = u[0] * self.B[i][1] - u[1] * self.B[i][0] < self.N[i]
-            fail = False
-            kmin = 0
-            C = (c[0] - u[0], c[1] - u[1])
-            for j in xrange(len(outline)):
-                X = (u[0] - outline[j - 1][0], u[1] - outline[j - 1][1])
-                div = C[0] * self.B[j - 1][1] - C[1] * self.B[j - 1][0]
-                if div:
-                    k = (self.B[j - 1][0] * X[1] - self.B[j - 1][1] * X[0]) / float(div)
-                    if k > 0:
-                        m = (C[0] * X[1] - C[1] * X[0]) / float(div)
-                        if m == 1:
-                            one = self.B[j - 1][1] * u[0] - self.B[j - 1][0] * u[1] > self.N[j - 1]
-                            two = self.B[j][1] * u[0] - self.B[j][0] * u[1] > self.N[j]
-                            if one == two:
-                                if k < 1:
-                                    fail = True
-                                    break
-                                else:
-                                    if kmin == 0 or kmin > k:
-                                        kmin = k
+#    @try_this(API())
+    def lightUp(self, player, maze):
+        keypoints = []
+        P = player
 
-                        if m > 0 and m < 1:
-                            if k < 1:
-                                fail = True
-                                break
-                            else:
-                                if kmin == 0 or kmin > k:
-                                    kmin = k
-            if not fail:
-                extra = ()
-                if rib0 == rib1:
-                    extra = (int(u[0] + C[0] * kmin + .5), int(u[1] + C[1] * kmin + .5)) #Local variable 'C' referenced before assignment
-                    if rib0:
-                        visible.append(extra)
+        for ray in maze:
+            for N in ray:
 
-                visible.append(c)
+                A = (N[0] - P[0], N[1] - P[1])
+                kmin = None
+                semipass = 0
+                viewBlocked = False
 
-                if rib0 == False and rib1 == False:
-                    visible.append(extra)
-        return visible
+                for plank in maze:
+                    L = plank[-1]
+                    for M in plank:
 
-    @try_this(API())
+                        B = (M[0] - L[0], M[1] - L[1])
+                        C = (L[0] - P[0], L[1] - P[1])
+                        L = M
+                        div = A[0] * B[1] - A[1] * B[0]
+                        if div > 0:
+                            n = (C[0] * A[1] - C[1] * A[0])
+                            if n >= 0 and n <= div:
+                                k = (C[0] * B[1] - C[1] * B[0])
+                                if k > 0:
+                                    if k < div:
+                                        kmin = None
+                                        viewBlocked = True
+                                        break
+                                    if k == div:
+                                        if semipass:
+                                            kmin = 1
+                                        if n:
+                                            semipass += 1
+                                        else:
+                                            semipass -= 1
+                                    if k > div: # and n and n != div:
+                                        k /= float(div)
+                                        if kmin is None or kmin > k:
+                                            kmin = k
+                    if viewBlocked:
+                        break
+
+                if kmin is not None:
+                    R =(P[0] + kmin * A[0], P[1] + kmin * A[1])
+                    if semipass == 0:
+                        keypoints.append(N)
+                    elif semipass < 0:
+                        keypoints.append(N + R)
+                    else:
+                        keypoints.append(R + N)
+    #                print int( atan2(kmin * A[1], kmin * A[0]) * 57.2957 + 360 ) % 360, int(hypot(kmin * A[0], kmin * A[1])), semipass
+
+        keypoints.sort(key=lambda p: atan2(p[1] - player[1], p[0] - player[0]))
+        i = 0
+        while i < len(keypoints):
+            if len(keypoints[i]) == 4:
+                tmp = keypoints.pop(i)
+                keypoints.insert(i,(tmp[0], tmp[1]))
+                keypoints.insert(i,(tmp[2], tmp[3]))
+                i += 2
+            else: i += 1
+        return keypoints
+
+#    @try_this(API())
     def simpleMaze(self, side=36, unit=20):
-        f = []
-        for i in xrange(side):
-            f.append([])
-            for j in xrange(side):
-                f[i].append(0 if i % (side - 1) and j % (side - 1) else 2)
-
-        x = random.randrange(1, side - 1)
-        y = random.randrange(1, side - 1)
-
-        def possible(x, y):
-            if f[x][y]:
-                return False
-            s = [f[x + 1][y + 1], f[x][y + 1], f[x - 1][y + 1], f[x - 1][y], f[x - 1][y - 1], f[x][y - 1],
-                 f[x + 1][y - 1], f[x + 1][y]]
-            for i in (0, 2, 4, 6):
-                if s[i - 1] != 1 and s[i] == 1 and s[i + 1] != 1:
-                    return False
-            S = 0
-            for i in (1, 3, 5, 7):
-                if s[i] == 1:
-                    S += 1
-            return S < 2
-
-        while True:
-            f[x][y] = 1
-            d = []
-            if possible(x + 1, y): d.append([x + 1, y])
-            if possible(x, y + 1): d.append([x, y + 1])
-            if possible(x - 1, y): d.append([x - 1, y])
-            if possible(x, y - 1): d.append([x, y - 1])
-
-            if not d:
-                break
-            [x, y] = d[random.randrange(len(d))]
-
+        f = aMaze(side, 50, 75)
+    #    view(f)
         vec = []
-        for y in xrange(side):
-            for x in xrange(side):
-                if f[x][y] == 1:
+        for y in xrange(side + 1):
+            for x in xrange(side + 1):
+                if f[x][y]:
                     vec.append(((unit * x, unit * y), (unit * x + unit, unit * y)))
-                    vec.append(((unit * x, unit * y), (unit * x, unit * y - unit)))
-                    vec.append(((unit * x, unit * y - unit), (unit * x + unit, unit * y - unit)))
-                    vec.append(((unit * x + unit, unit * y), (unit * x + unit, unit * y - unit)))
+                    vec.append(((unit * x, unit * y), (unit * x, unit * y + unit)))
+                    vec.append(((unit * x, unit * y + unit), (unit * x + unit, unit * y + unit)))
+                    vec.append(((unit * x + unit, unit * y), (unit * x + unit, unit * y + unit)))
 
         vec = sorted(vec)
         i = 0
@@ -209,19 +185,23 @@ class Core(object):
             while j < len(vec):
                 if vec[i][1] == vec[j][0]:
                     if vec[i][0][0] == vec[j][1][0] or vec[i][0][1] == vec[j][1][1]:
-                        tmp = vec.pop(j)[1]
-                        vec.insert(i, (vec.pop(i)[0], tmp))
+    #                    tmp = vec.pop(j)[1]
+    #                    vec.insert(i, (vec.pop(i)[0], tmp))
+                        vec.insert(i, (vec.pop(i)[0], vec.pop(j - 1)[1]))
                         continue
-                if vec[i][0] == vec[j][1]:
-                    if vec[j][0][0] == vec[i][1][0] or vec[j][0][1] == vec[i][1][1]:
-                        tmp = vec.pop(j)[0]
-                        vec.insert(i, (tmp, vec.pop(i)[1]))
-                        continue
+    #            if vec[i][0] == vec[j][1]:
+    #                if vec[j][0][0] == vec[i][1][0] or vec[j][0][1] == vec[i][1][1]:
+    #                    tmp = vec.pop(j)[0]
+    #                    vec.insert(i, (tmp, vec.pop(i)[1]))
+    #                    continue
                 j += 1
             i += 1
 
+        vec.append(vec[0])
+        outstand = []
         outline = []
         v = [vec.pop(0)]
+
         while vec:
             for i, e in enumerate(vec):
                 if v[-1][1] == e[0]:
@@ -243,22 +223,15 @@ class Core(object):
                     v.insert(0, (t[1], t[0]))
                     break
             else:
-                vec = []
+                if v[0][0] == v[-1][1]:
+                    outline.append(v[0][0])
+                outstand.append(outline)
+                outline = []
+                v = [vec.pop(0)]
 
-        if v[0][0] == v[-1][1]:
-            outline.append(v[0][0])
+        if outline:
+            outstand.append(outline)
 
-        m = [0, 0]
-        for o in outline:
-            m[0] += o[0]
-            m[1] += o[1]
-        m[0] = side * unit / 2 - m[0] / len(outline)
-        m[1] = side * unit / 2 - m[1] / len(outline)
-
-        for i in xrange(len(outline)):
-            t = list(outline.pop(i))
-            t[0] += m[0]
-            t[1] += m[1]
-            outline.insert(i, tuple(t))
-
-        return outline
+        outstand.pop(0)
+        outstand[0].reverse()
+        return outstand

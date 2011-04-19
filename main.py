@@ -50,8 +50,8 @@ class Scene(QGraphicsScene):
         #            self.removeItem(self.app.core.light)
         #        item = self.itemAt(ev.scenePos().x(),ev.scenePos().y())
         #        if item == self.app.core.map:
-        if item == self.app.core.map or item == self.app.core.light:
-            self.app.core.redrawLight(ev.scenePos())
+#        if item == self.app.core.map or item == self.app.core.light:
+        self.app.core.redrawLight(ev.scenePos())
         #            self.app.core.player.setPos(ev.scenePos())
 
 
