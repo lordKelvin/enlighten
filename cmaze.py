@@ -1,7 +1,7 @@
 from random import randrange
-from math import atan2, hypot
+from math import atan2#, hypot
 from PIL import Image, ImageDraw
-import os
+import os, subprocess
 
 def view(m):
     for c in m:
@@ -22,26 +22,23 @@ def aMaze(size, fullfill, wallshort):
             r.append((x, y))
 
     while len(r):
-        (startx, starty) = r.pop(randrange(len(r)))
-        if m[startx][starty] or randrange(100) > fullfill:
+        (sx, sy) = r.pop(randrange(len(r)))
+        if m[sx][sy] or randrange(100) > fullfill:
             continue
 
-        (sx, sy) = {0: (1, 0), 1: (0, 1), 2: (-1, 0), 3: (0, -1)}[randrange(4)]
+        (dx, dy) = {0: (1, 0), 1: (0, 1), 2: (-1, 0), 3: (0, -1)}[randrange(4)]
 
-        while not m[startx][starty]:
-            m[startx][starty] = 1
+        while not m[sx][sy]:
+            m[sx][sy] = 1
             if randrange(100) > wallshort:
                 break
-            startx += sx
-            starty += sy
-            m[startx][starty] = 1
-            startx += sx
-            starty += sy
+            (sx, sy) = (sx + dx, sy + dy)
+            m[sx][sy] = 1
+            (sx, sy) = (sx + dx, sy + dy)
     return m
 
 def simpleMaze(side=20, unit=20):
     f = aMaze(side, 50, 75)
-#    view(f)
     vec = []
     for y in xrange(side + 1):
         for x in xrange(side + 1):
@@ -63,16 +60,11 @@ def simpleMaze(side=20, unit=20):
     while i + 1 < len(vec):
         j = i + 1
         while j < len(vec):
-            if vec[i][1] == vec[j][0]:
-                if vec[i][0][0] == vec[j][1][0] or vec[i][0][1] == vec[j][1][1]:
-#                    tmp = vec.pop(j)[1]
-#                    vec.insert(i, (vec.pop(i)[0], tmp))
+            if vec[i][1] == vec[j][0] and (vec[i][0][0] == vec[j][1][0] or vec[i][0][1] == vec[j][1][1]):
                     vec.insert(i, (vec.pop(i)[0], vec.pop(j - 1)[1]))
                     continue
-#            if vec[i][0] == vec[j][1]:
-#                if vec[j][0][0] == vec[i][1][0] or vec[j][0][1] == vec[i][1][1]:
-#                    tmp = vec.pop(j)[0]
-#                    vec.insert(i, (tmp, vec.pop(i)[1]))
+#            if vec[i][0] == vec[j][1] and (vec[j][0][0] == vec[i][1][0] or vec[j][0][1] == vec[i][1][1]):
+#                    vec.insert(i, (vec.pop(j)[0], vec.pop(i)[1]))
 #                    continue
             j += 1
         i += 1
@@ -80,34 +72,32 @@ def simpleMaze(side=20, unit=20):
     vec.append(vec[0])
     outstand = []
     outline = []
-    v = [vec.pop(0)]
+    (v0, v1) = vec.pop(0)
 
     while vec:
         for i, e in enumerate(vec):
-            if v[-1][1] == e[0]:
+            if v1 == e[0]:
                 outline.append(e[0])
-                v.append(vec.pop(i))
+                v1 = vec.pop(i)[1]
                 break
-            if v[-1][1] == e[1]:
+            if v1 == e[1]:
                 outline.append(e[1])
-                t = vec.pop(i)
-                v.append((t[1], t[0]))
+                v1 = vec.pop(i)[0]
                 break
-            if v[0][0] == e[1]:
+            if v0 == e[1]:
                 outline.insert(0, e[1])
-                v.insert(0, vec.pop(i))
+                v0 = vec.pop(i)[0]
                 break
-            if v[0][0] == e[0]:
+            if v0 == e[0]:
                 outline.insert(0, e[0])
-                t = vec.pop(i)
-                v.insert(0, (t[1], t[0]))
+                v0 = vec.pop(i)[1]
                 break
         else:
-            if v[0][0] == v[-1][1]:
-                outline.append(v[0][0])
+            if v0 == v1:
+                outline.append(v0)
             outstand.append(outline)
             outline = []
-            v = [vec.pop(0)]
+            (v0, v1) = vec.pop(0)
 
     if outline:
         outstand.append(outline)
@@ -152,7 +142,7 @@ def beam(maze, player):
                                         semipass += 1
                                     else:
                                         semipass -= 1
-                                if k > div: # and n and n != div:
+                                if k > div:
                                     k /= float(div)
                                     if kmin is None or kmin > k:
                                         kmin = k
@@ -160,15 +150,15 @@ def beam(maze, player):
                     break
 
             if kmin is not None:
-                R =(P[0] + kmin * A[0], P[1] + kmin * A[1]) 
-                if semipass == 0:
-                    keypoints.append(N)
-                elif semipass < 0:
-                    keypoints.append(N + R)
+                if semipass:
+                    R =(P[0] + kmin * A[0], P[1] + kmin * A[1])
+                    if semipass > 0:
+                        keypoints.append(R + N)
+                    else:
+                        keypoints.append(N + R)
                 else:
-                    keypoints.append(R + N)
-#                print int( atan2(kmin * A[1], kmin * A[0]) * 57.2957 + 360 ) % 360, int(hypot(kmin * A[0], kmin * A[1])), semipass
-    
+                    keypoints.append(N)
+
     keypoints.sort(key=lambda p: atan2(p[1] - player[1], p[0] - player[0]))
     i = 0
     while i < len(keypoints):
@@ -180,14 +170,7 @@ def beam(maze, player):
         else: i += 1
     return keypoints
 
-def field3d(maze):
-    for i in xrange(len(maze)):
-        for j in xrange(len(maze[i])):
-            x = maze[i][j][0] - 210
-            y = maze[i][j][1] + 210
-            maze[i][j] = (x * 100 / (100 - y) + 210, y * 200 / (y - 100))
-
-def show(maze, player, width=400, height=400):
+def show(maze, player, width=420, height=420):
     img = Image.new("RGB", (width, height), "#000000")
     draw = ImageDraw.Draw(img)
     light = beam(maze, player)
@@ -198,10 +181,10 @@ def show(maze, player, width=400, height=400):
 
     draw.polygon(light, fill=(12, 100, 0))
 
-#    for i, line in enumerate(light):
-#        draw.line(player + line, fill=(50, 200, 0))
-#        draw.text(line, str(i), fill=(200, 0, 50))
-        
+    #    for i, line in enumerate(light):
+    #        draw.line(player + line, fill=(50, 200, 0))
+    #        draw.text(line, str(i), fill=(200, 0, 50))
+
     for poly in maze:
         for i in xrange(len(poly)):
             if (poly[i - 1][0] - player[0]) * (poly[i][1] - poly[i - 1][1]) - (poly[i - 1][1] - player[1]) * (poly[i][0] - poly[i - 1][0]) >= 0:
@@ -213,8 +196,13 @@ def show(maze, player, width=400, height=400):
     draw.line((player[0] - 3, player[1] + 3, player[0] + 3, player[1] - 3), fill=(255, 0, 0))
     img.save(open('out.png', 'wb'), 'PNG')
 
+def field3d(poly, width, distance, dfocus, hfocus):
+    for i in xrange(len(poly)):
+        x = poly[i][0] - width / 2
+        y = poly[i][1] + distance
+        poly[i] = (x * dfocus / (dfocus - y) + width / 2, y * hfocus / (y - dfocus))
+
 sm = simpleMaze()
 show(sm, (200 - 9, 200 - 11), 420, 420)
-
-os.system('out.png')
-
+#os.system('out.png')
+subprocess.Popen(['eog','out.png'])
