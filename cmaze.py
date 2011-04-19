@@ -202,7 +202,7 @@ def field3d(poly, width, distance, dfocus, hfocus):
         y = poly[i][1] + distance
         poly[i] = (x * dfocus / (dfocus - y) + width / 2, y * hfocus / (y - dfocus))
 
-sm = simpleMaze()
-show(sm, (200 - 9, 200 - 11), 420, 420)
+#sm = simpleMaze()
+#show(sm, (200 - 9, 200 - 11), 420, 420)
 #os.system('out.png')
-subprocess.Popen(['eog','out.png'])
+#subprocess.Popen(['eog','out.png'])
